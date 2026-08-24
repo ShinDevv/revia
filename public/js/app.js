@@ -10,6 +10,42 @@ import { createQuizSession } from "./quiz.js";
 
 const MIN_CONTENT_LENGTH = 20;
 const GENERIC_GENERATE_ERROR = "Something went wrong while generating your reviewer. Please try again.";
+let deferredInstallPrompt;
+
+function initInstallPrompt() {
+  const header = qs(".header-inner");
+  if (!header || !deferredInstallPrompt || window.matchMedia("(display-mode: standalone)").matches) {
+    return;
+  }
+
+  const installButton = document.createElement("button");
+  installButton.type = "button";
+  installButton.className = "button button-secondary install-button";
+  installButton.textContent = "Install app";
+  installButton.addEventListener("click", async () => {
+    installButton.disabled = true;
+    deferredInstallPrompt.prompt();
+    const result = await deferredInstallPrompt.userChoice;
+    if (result.outcome === "accepted") {
+      installButton.remove();
+    } else {
+      installButton.disabled = false;
+    }
+    deferredInstallPrompt = null;
+  });
+  header.append(installButton);
+}
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  initInstallPrompt();
+});
+
+window.addEventListener("appinstalled", () => {
+  document.querySelector(".install-button")?.remove();
+  deferredInstallPrompt = null;
+});
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -415,6 +451,7 @@ function initSharedUi() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initInstallPrompt();
   setActiveNav();
   initSharedUi();
   const page = document.body.dataset.page;
