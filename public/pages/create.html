@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <meta name="description" content="Turn your study notes into flashcards and quiz questions.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <title>Create Reviewer · Revia</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="create">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        Revia
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/" data-nav="dashboard">Dashboard</a>
+        <a href="/create" data-nav="create">Create</a>
+        <a href="/library" data-nav="library">Library</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <p class="eyebrow">Create Reviewer</p>
+    <h1>Turn notes into a study deck.</h1>
+    <p class="lede">Paste topics, pointers, or lecture notes. Revia will generate flashcards and multiple-choice questions.</p>
+
+    <form class="form-card" data-create-form>
+      <div class="field">
+        <label for="title">Title / topic <span class="meta">(optional)</span></label>
+        <input id="title" name="title" type="text" maxlength="120" placeholder="Python Basics">
+      </div>
+
+      <div class="field">
+        <label for="content">Study material</label>
+        <textarea id="content" name="content" required placeholder="Paste your notes, topics, pointers, or reviewer here..."></textarea>
+        <p class="char-count" data-char-count>0 characters</p>
+      </div>
+
+      <button class="button button-primary" type="submit" data-generate>Generate Reviewer</button>
+      <div class="alert is-error" data-alert hidden></div>
+    </form>
+  </main>
+
+  <div class="loading" data-loading hidden>
+    <div class="loading-card" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p><strong>Generating your reviewer</strong></p>
+      <p class="meta">This can take a few seconds.</p>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

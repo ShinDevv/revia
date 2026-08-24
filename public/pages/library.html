@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <meta name="description" content="Browse your saved Revia study reviewers.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <title>Library · Revia</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="library">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        Revia
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/" data-nav="dashboard">Dashboard</a>
+        <a href="/create" data-nav="create">Create</a>
+        <a href="/library" data-nav="library">Library</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="library-toolbar">
+      <div>
+        <p class="eyebrow">Reviewer Library</p>
+        <h1>Your saved reviewers</h1>
+      </div>
+      <div class="field" style="margin:0;min-width:min(100%,280px)">
+        <label for="search">Search reviewers</label>
+        <input id="search" type="search" placeholder="Search titles and summaries">
+      </div>
+    </div>
+
+    <p class="empty-copy" data-library-empty hidden></p>
+    <div class="library-grid" data-library-list></div>
+    <p class="device-note">Your reviewers are saved on this device.</p>
+  </main>
+
+  <div class="modal" data-delete-modal hidden>
+    <div class="modal-card" role="dialog" aria-labelledby="delete-title" aria-modal="true">
+      <h2 id="delete-title">Delete this reviewer?</h2>
+      <p>This action cannot be undone.</p>
+      <div class="button-row">
+        <button type="button" class="button button-secondary" data-close-modal>Cancel</button>
+        <button type="button" class="button button-danger" data-confirm-delete>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" data-rename-modal hidden>
+    <div class="modal-card" role="dialog" aria-labelledby="rename-title-heading" aria-modal="true">
+      <h2 id="rename-title-heading">Rename reviewer</h2>
+      <div class="field">
+        <label for="rename-title">New title</label>
+        <input id="rename-title" type="text" maxlength="120">
+      </div>
+      <div class="button-row">
+        <button type="button" class="button button-secondary" data-close-modal>Cancel</button>
+        <button type="button" class="button button-primary" data-confirm-rename>Save name</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <meta name="description" content="Study a Revia reviewer with flashcards and quizzes.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <title>Reviewer · Revia</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="reviewer">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        Revia
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/" data-nav="dashboard">Dashboard</a>
+        <a href="/create" data-nav="create">Create</a>
+        <a href="/library" data-nav="library">Library</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section data-missing hidden>
+      <h1>Reviewer not found</h1>
+      <p class="lede">This reviewer is not saved on this device. It may have been deleted, or it was created in another browser.</p>
+      <a class="button button-primary" href="/library">Back to Library</a>
+    </section>
+
+    <section data-reviewer-content>
+      <p class="eyebrow" data-created></p>
+      <h1 data-title></h1>
+      <div class="button-row">
+        <button type="button" class="button button-secondary" data-open-rename>Rename</button>
+        <button type="button" class="button button-danger" data-open-delete>Delete</button>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Reviewer sections">
+        <button type="button" class="is-active" role="tab" aria-selected="true" data-tab="overview">Overview</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="flashcards">Flashcards</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="quiz">Quiz</button>
+      </div>
+
+      <section data-panel="overview">
+        <article class="panel-card">
+          <h2>Summary</h2>
+          <p data-summary></p>
+        </article>
+        <div class="stats-grid">
+          <article class="stat-card">
+            <p class="eyebrow">Flashcards</p>
+            <p class="stat-value" data-fc-count>0</p>
+          </article>
+          <article class="stat-card">
+            <p class="eyebrow">Questions</p>
+            <p class="stat-value" data-mcq-count>0</p>
+          </article>
+        </div>
+        <div class="button-row">
+          <button type="button" class="button button-primary" data-tab="flashcards">Study Flashcards</button>
+          <button type="button" class="button button-secondary" data-tab="quiz">Start Quiz</button>
+        </div>
+      </section>
+
+      <section data-panel="flashcards" hidden>
+        <div data-flashcards-root>
+          <p class="eyebrow" data-fc-progress>Card 1 of 1</p>
+          <div class="flashcard-wrap">
+            <button type="button" class="flashcard" data-fc-card aria-label="Flashcard">
+              <div class="flashcard-inner">
+                <div class="flashcard-face flashcard-front" data-fc-front></div>
+                <div class="flashcard-face flashcard-back" data-fc-back></div>
+              </div>
+            </button>
+          </div>
+          <div class="button-row">
+            <button type="button" class="button button-secondary" data-fc-prev>Previous</button>
+            <button type="button" class="button button-secondary" data-fc-flip>Flip</button>
+            <button type="button" class="button button-primary" data-fc-next>Next</button>
+          </div>
+          <p class="meta">Space flips the card. Left and right arrows move between cards.</p>
+        </div>
+      </section>
+
+      <section data-panel="quiz" hidden>
+        <div class="panel-card" data-quiz-root>
+          <div data-quiz-stage></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal" data-delete-modal hidden>
+    <div class="modal-card" role="dialog" aria-labelledby="delete-title" aria-modal="true">
+      <h2 id="delete-title">Delete this reviewer?</h2>
+      <p>This action cannot be undone.</p>
+      <div class="button-row">
+        <button type="button" class="button button-secondary" data-close-modal>Cancel</button>
+        <button type="button" class="button button-danger" data-confirm-delete>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" data-rename-modal hidden>
+    <div class="modal-card" role="dialog" aria-labelledby="rename-title-heading" aria-modal="true">
+      <h2 id="rename-title-heading">Rename reviewer</h2>
+      <div class="field">
+        <label for="rename-title">New title</label>
+        <input id="rename-title" type="text" maxlength="120">
+      </div>
+      <div class="button-row">
+        <button type="button" class="button button-secondary" data-close-modal>Cancel</button>
+        <button type="button" class="button button-primary" data-confirm-rename>Save name</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

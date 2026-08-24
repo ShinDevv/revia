@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <meta name="description" content="Generate and study AI-powered reviewers with flashcards and quizzes.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <title>Revia · AI Study Reviewer</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="dashboard">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/">
+        Revia
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/" data-nav="dashboard">Dashboard</a>
+        <a href="/create" data-nav="create">Create</a>
+        <a href="/library" data-nav="library">Library</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Dashboard</p>
+      <h1>Study smarter with AI.</h1>
+      <p class="lede">Paste your notes, generate a structured reviewer, then study with flashcards and quizzes saved on this device.</p>
+      <div class="button-row">
+        <a class="button button-primary" href="/create">Create Reviewer</a>
+        <a class="button button-secondary" href="/library">Open Library</a>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="stats-grid">
+        <article class="stat-card">
+          <p class="eyebrow">Saved Reviewers</p>
+          <p class="stat-value" data-reviewer-count>0</p>
+        </article>
+      </div>
+
+      <h2>Recent Reviewers</h2>
+      <p class="empty-copy" data-dashboard-empty hidden>No reviewers yet. Create one from your notes to get started.</p>
+      <div class="card-grid" data-recent-list></div>
+    </section>
+  </main>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
