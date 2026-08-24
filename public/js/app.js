@@ -13,8 +13,8 @@ const GENERIC_GENERATE_ERROR = "Something went wrong while generating your revie
 let deferredInstallPrompt;
 
 function initInstallPrompt() {
-  const header = qs(".header-inner");
-  if (!header || !deferredInstallPrompt || window.matchMedia("(display-mode: standalone)").matches) {
+  const nav = qs(".nav");
+  if (!nav || !deferredInstallPrompt || window.matchMedia("(display-mode: standalone)").matches) {
     return;
   }
 
@@ -33,7 +33,7 @@ function initInstallPrompt() {
     }
     deferredInstallPrompt = null;
   });
-  header.append(installButton);
+  nav.append(installButton);
 }
 
 window.addEventListener("beforeinstallprompt", (event) => {
