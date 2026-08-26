@@ -187,7 +187,13 @@ function validateAndNormalizeDeck(raw, requestedTitle) {
 
 function buildPrompt(systemPrompt, title, content) {
   const topicLine = title ? `Preferred title/topic: ${title}\n\n` : "";
-  return `${systemPrompt}\n\n${topicLine}Study material:\n${content}`;
+  const promptLines = systemPrompt.split("\n").map((line) => line.trim()).filter(Boolean);
+  const schemaStart = promptLines.indexOf("JSON schema:");
+  const rulesStart = promptLines.indexOf("Rules:");
+  const schema = schemaStart >= 0 ? promptLines.slice(schemaStart, rulesStart >= 0 ? rulesStart : schemaStart + 12) : [];
+  const rules = rulesStart >= 0 ? promptLines.slice(rulesStart, rulesStart + 5) : [];
+  const compactPrompt = [...schema, ...rules].join("\n");
+  return `${compactPrompt}\n${topicLine}Study material:\n${content}\nReturn ONLY valid JSON. Do not use Markdown or code fences.`;
 }
 
 function sendFailure(_req, res) {

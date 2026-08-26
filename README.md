@@ -32,7 +32,7 @@ AI_API_URLS=https://ceddsrestapi.vercel.app/ai/chatgpt
 PORT=3000
 ```
 
-`AI_API_URLS` is a comma-separated list. Revia tries each endpoint until one returns a valid reviewer. If it is not set, the default endpoint is `https://smfahim.xyz/ai/gemini/v3`.
+`AI_API_URLS` is a comma-separated list. Revia tries each endpoint until one returns a valid reviewer. The configured default is `https://ceddsrestapi.vercel.app/ai/chatgpt`.
 
 ## Run
 

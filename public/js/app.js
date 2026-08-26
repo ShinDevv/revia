@@ -9,9 +9,9 @@ import {
   recordQuizAnswer,
   recordQuizResult,
   recordStudySession
-} from "./storage.js?v=14";
-import { createFlashcardSession } from "./flashcards.js?v=14";
-import { createQuizSession } from "./quiz.js?v=14";
+} from "./storage.js?v=15";
+import { createFlashcardSession } from "./flashcards.js?v=15";
+import { createQuizSession } from "./quiz.js?v=15";
 
 const MIN_CONTENT_LENGTH = 20;
 const GENERIC_GENERATE_ERROR = "Something went wrong while generating your reviewer. Please try again.";
@@ -239,23 +239,10 @@ function initCreate() {
       const response = await fetch("/api/study-deck", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: studyContent,
-          title: studyTitle
-        })
+        body: JSON.stringify({ content: studyContent, title: studyTitle })
       });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (_error) {
-        throw new Error("parse");
-      }
-
-      if (!response.ok || !data?.success || !data.reviewer) {
-        throw new Error("generate");
-      }
-
+      const data = await response.json();
+      if (!response.ok || !data?.success || !data.reviewer) throw new Error("generate");
       saveReviewer(data.reviewer);
       window.location.href = `/reviewer?id=${encodeURIComponent(data.reviewer.id)}`;
     } catch (error) {
