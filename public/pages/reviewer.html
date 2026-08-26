@@ -8,7 +8,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
   <title>Reviewer · Revia</title>
-  <link rel="stylesheet" href="/css/style.css?v=7">
+  <link rel="stylesheet" href="/css/style.css?v=8">
 </head>
 <body data-page="reviewer">
   <header class="site-header">
@@ -37,6 +37,7 @@
       <div class="button-row">
         <button type="button" class="button button-secondary" data-open-rename>Rename</button>
         <button type="button" class="button button-danger" data-open-delete>Delete</button>
+        <button type="button" class="button button-primary" data-open-expand>+ Expand Reviewer</button>
       </div>
 
       <div class="tabs" role="tablist" aria-label="Reviewer sections">
@@ -46,6 +47,25 @@
       </div>
 
       <section data-panel="overview">
+        <article class="panel-card progress-panel">
+          <div class="progress-heading">
+            <div>
+              <p class="eyebrow">Your progress</p>
+              <h2>Keep building momentum</h2>
+            </div>
+            <strong data-mastery-percent>0%</strong>
+          </div>
+          <div class="progress-bar"><span data-mastery-bar></span></div>
+          <p class="meta" data-mastery-label>0 / 0 mastered</p>
+          <div class="progress-grid">
+            <div><strong data-current-streak>0</strong><span>Current streak</span></div>
+            <div><strong data-best-streak>0</strong><span>Best streak</span></div>
+            <div><strong data-quiz-accuracy>0%</strong><span>Quiz accuracy</span></div>
+            <div><strong data-quiz-attempts>0</strong><span>Quiz attempts</span></div>
+            <div><strong data-study-sessions>0</strong><span>Study sessions</span></div>
+            <div><strong data-last-studied>Not yet</strong><span>Last studied</span></div>
+          </div>
+        </article>
         <article class="panel-card">
           <h2>Summary</h2>
           <p data-summary></p>
@@ -76,6 +96,11 @@
                 <div class="flashcard-face flashcard-back" data-fc-back></div>
               </div>
             </button>
+          </div>
+          <p class="answer-prompt" data-fc-answer-prompt hidden>Did you get it right?</p>
+          <div class="button-row answer-actions">
+            <button type="button" class="button button-primary" data-fc-got-it disabled>Got it</button>
+            <button type="button" class="button button-secondary" data-fc-missed disabled>Didn't get it</button>
           </div>
           <div class="button-row">
             <button type="button" class="button button-secondary" data-fc-prev>Previous</button>
@@ -119,6 +144,22 @@
     </div>
   </div>
 
-  <script type="module" src="/js/app.js?v=5"></script>
+  <div class="modal" data-expand-modal hidden>
+    <div class="modal-card" role="dialog" aria-labelledby="expand-title" aria-modal="true">
+      <h2 id="expand-title">Expand Reviewer</h2>
+      <p class="meta">Ask for new material without repeating what is already here.</p>
+      <div class="field">
+        <label for="expand-request">What should be added?</label>
+        <textarea id="expand-request" rows="4" placeholder="Add 10 more flashcards about my weak areas..."></textarea>
+      </div>
+      <div class="alert is-error" data-expand-alert hidden></div>
+      <div class="button-row">
+        <button type="button" class="button button-secondary" data-close-modal>Cancel</button>
+        <button type="button" class="button button-primary" data-confirm-expand>Expand Reviewer</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.js?v=8"></script>
 </body>
 </html>

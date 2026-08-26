@@ -3,10 +3,14 @@ import {
   getReviewer,
   getReviewers,
   saveReviewer,
-  updateReviewer
-} from "./storage.js";
-import { createFlashcardSession } from "./flashcards.js";
-import { createQuizSession } from "./quiz.js";
+  updateReviewer,
+  getReviewerProgress,
+  recordFlashcardAnswer,
+  recordQuizResult,
+  recordStudySession
+} from "./storage.js?v=8";
+import { createFlashcardSession } from "./flashcards.js?v=8";
+import { createQuizSession } from "./quiz.js?v=8";
 
 const MIN_CONTENT_LENGTH = 20;
 const GENERIC_GENERATE_ERROR = "Something went wrong while generating your reviewer. Please try again.";
@@ -176,13 +180,18 @@ function initDashboard() {
   if (emptyEl) emptyEl.hidden = true;
   recentEl.innerHTML = recent
     .map(
-      (reviewer) => `
+      (reviewer) => {
+        const progress = getReviewerProgress(reviewer.id);
+        const mastered = (reviewer.flashcards || []).filter((card) => card.stats?.mastered).length;
+        return `
       <a class="reviewer-card" href="/reviewer?id=${encodeURIComponent(reviewer.id)}">
         <h3>${escapeHtml(reviewer.title)}</h3>
         <p>${escapeHtml(reviewer.summary || "")}</p>
         <p class="meta">${reviewer.flashcards?.length || 0} flashcards · ${reviewer.multipleChoice?.length || 0} questions</p>
+        <p class="progress-summary">${mastered} / ${reviewer.flashcards?.length || 0} mastered · ${progress.currentStreak} streak</p>
       </a>
-    `
+    `;
+      }
     )
     .join("");
 }
@@ -261,6 +270,9 @@ function initCreate() {
 }
 
 function reviewerCard(reviewer) {
+  const progress = getReviewerProgress(reviewer.id);
+  const cards = reviewer.flashcards || [];
+  const mastered = cards.filter((card) => card.stats?.mastered).length;
   return `
     <article class="library-card" data-card-id="${escapeHtml(reviewer.id)}">
       <div>
@@ -268,6 +280,7 @@ function reviewerCard(reviewer) {
         <p>${escapeHtml(reviewer.summary || "")}</p>
         <p class="meta">${reviewer.flashcards?.length || 0} flashcards · ${reviewer.multipleChoice?.length || 0} questions</p>
         <p class="meta">Created ${formatDate(reviewer.createdAt)}</p>
+        <p class="progress-summary">${mastered} / ${cards.length} mastered · ${progress.currentStreak} streak</p>
       </div>
       <details class="card-menu">
         <summary class="menu-button" aria-label="Actions for ${escapeHtml(reviewer.title)}">&#8942;</summary>
@@ -391,16 +404,48 @@ function initReviewer() {
   qs("[data-fc-count]").textContent = String(reviewer.flashcards?.length || 0);
   qs("[data-mcq-count]").textContent = String(reviewer.multipleChoice?.length || 0);
 
+  function renderProgress() {
+    const current = getReviewer(id);
+    const progress = getReviewerProgress(id);
+    const cards = current?.flashcards || [];
+    const mastered = cards.filter((card) => card.stats?.mastered).length;
+    const percent = cards.length ? Math.round((mastered / cards.length) * 100) : 0;
+    const answered = progress.quizQuestionsAnswered || 0;
+    const accuracy = answered ? Math.round((progress.quizCorrect / answered) * 100) : 0;
+    qs("[data-mastery-percent]").textContent = `${percent}%`;
+    qs("[data-mastery-bar]").style.width = `${percent}%`;
+    qs("[data-mastery-label]").textContent = `${mastered} / ${cards.length} mastered`;
+    qs("[data-current-streak]").textContent = String(progress.currentStreak);
+    qs("[data-best-streak]").textContent = String(progress.bestStreak);
+    qs("[data-quiz-accuracy]").textContent = `${accuracy}%`;
+    qs("[data-quiz-attempts]").textContent = String(progress.quizAttempts);
+    qs("[data-study-sessions]").textContent = String(progress.studySessions);
+    qs("[data-last-studied]").textContent = progress.lastStudied ? formatDate(progress.lastStudied) : "Not yet";
+  }
+
+  renderProgress();
+
   const flashcardsRoot = qs("[data-flashcards-root]");
   const quizRoot = qs("[data-quiz-root]");
-  const flashcards = createFlashcardSession(flashcardsRoot, reviewer.flashcards || []);
-  createQuizSession(quizRoot, reviewer.multipleChoice || []);
+  const flashcards = createFlashcardSession(flashcardsRoot, reviewer.flashcards || [], {
+    onAnswer(card, correct) {
+      recordFlashcardAnswer(id, card.id, correct);
+      renderProgress();
+    }
+  });
+  createQuizSession(quizRoot, reviewer.multipleChoice || [], {
+    onComplete(correct, total) {
+      recordQuizResult(id, correct, total);
+      renderProgress();
+    }
+  });
 
   const panels = {
     overview: qs("[data-panel='overview']"),
     flashcards: qs("[data-panel='flashcards']"),
     quiz: qs("[data-panel='quiz']")
   };
+  let sessionStarted = false;
 
   function showPanel(name) {
     Object.entries(panels).forEach(([key, panel]) => {
@@ -416,6 +461,11 @@ function initReviewer() {
     } else {
       flashcards.deactivate();
     }
+    if ((name === "flashcards" || name === "quiz") && !sessionStarted) {
+      recordStudySession(id);
+      sessionStarted = true;
+      renderProgress();
+    }
   }
 
   qsa("[data-tab]").forEach((tab) => {
@@ -427,6 +477,10 @@ function initReviewer() {
   const deleteModal = qs("[data-delete-modal]");
   const renameModal = qs("[data-rename-modal]");
   const renameInput = qs("#rename-title");
+  const expandModal = qs("[data-expand-modal]");
+  const expandRequest = qs("#expand-request");
+  const expandAlert = qs("[data-expand-alert]");
+  const expandButton = qs("[data-confirm-expand]");
 
   qs("[data-open-rename]")?.addEventListener("click", () => {
     if (renameInput) renameInput.value = reviewer.title;
@@ -434,6 +488,46 @@ function initReviewer() {
   });
 
   qs("[data-open-delete]")?.addEventListener("click", () => openModal(deleteModal));
+  qs("[data-open-expand]")?.addEventListener("click", () => openModal(expandModal));
+
+  expandButton?.addEventListener("click", async () => {
+    const request = expandRequest?.value.trim();
+    if (!request) {
+      showAlert(expandAlert, "Please describe what you want to add.");
+      expandRequest?.focus();
+      return;
+    }
+    expandButton.disabled = true;
+    expandButton.textContent = "Expanding your reviewer...";
+    showAlert(expandAlert, "");
+    try {
+      const current = getReviewer(id);
+      const response = await fetch("/api/study-deck/expand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewer: current, request })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success || !data.addition) throw new Error("expand");
+      const addition = data.addition;
+      if (!addition.flashcards.length && !addition.multipleChoice.length) {
+        showAlert(expandAlert, "No new unique material could be added.");
+        return;
+      }
+      saveReviewer({
+        ...current,
+        flashcards: [...(current.flashcards || []), ...addition.flashcards],
+        multipleChoice: [...(current.multipleChoice || []), ...addition.multipleChoice],
+        updatedAt: data.updatedAt
+      });
+      window.location.reload();
+    } catch (_error) {
+      showAlert(expandAlert, "Unable to expand your reviewer. Your existing reviewer is unchanged.");
+    } finally {
+      expandButton.disabled = false;
+      expandButton.textContent = "Expand Reviewer";
+    }
+  });
 
   qs("[data-confirm-delete]")?.addEventListener("click", () => {
     try {

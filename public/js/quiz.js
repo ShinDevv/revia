@@ -1,4 +1,4 @@
-export function createQuizSession(root, questions) {
+export function createQuizSession(root, questions, options = {}) {
   const items = Array.isArray(questions) ? questions.map((item) => ({ ...item })) : [];
   const state = {
     index: 0,
@@ -80,6 +80,10 @@ export function createQuizSession(root, questions) {
         </div>
       `;
       stage.querySelector("[data-quiz-retry]")?.addEventListener("click", reset);
+      if (!state.completed) {
+        state.completed = true;
+        options.onComplete?.(state.correct, total);
+      }
       stage.querySelector("[data-quiz-back]")?.addEventListener("click", () => {
         window.dispatchEvent(new CustomEvent("revia:show-overview"));
       });
@@ -142,6 +146,7 @@ export function createQuizSession(root, questions) {
     state.index += 1;
     state.selected = null;
     state.submitted = false;
+    state.completed = false;
     render();
   }
 

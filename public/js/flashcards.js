@@ -1,4 +1,4 @@
-export function createFlashcardSession(root, cards) {
+export function createFlashcardSession(root, cards, options = {}) {
   const deck = Array.isArray(cards) ? cards : [];
   let index = 0;
   let flipped = false;
@@ -18,6 +18,9 @@ export function createFlashcardSession(root, cards) {
     const prevBtn = root.querySelector("[data-fc-prev]");
     const nextBtn = root.querySelector("[data-fc-next]");
     const flipBtn = root.querySelector("[data-fc-flip]");
+    const answerPrompt = root.querySelector("[data-fc-answer-prompt]");
+    const gotItBtn = root.querySelector("[data-fc-got-it]");
+    const missedBtn = root.querySelector("[data-fc-missed]");
 
     if (!card) {
       if (progress) progress.textContent = "No flashcards available.";
@@ -38,6 +41,9 @@ export function createFlashcardSession(root, cards) {
     if (prevBtn) prevBtn.disabled = index === 0;
     if (nextBtn) nextBtn.disabled = index === total - 1;
     if (flipBtn) flipBtn.setAttribute("aria-pressed", flipped ? "true" : "false");
+    if (answerPrompt) answerPrompt.hidden = !flipped;
+    if (gotItBtn) gotItBtn.disabled = !flipped;
+    if (missedBtn) missedBtn.disabled = !flipped;
   }
 
   function flip() {
@@ -66,6 +72,12 @@ export function createFlashcardSession(root, cards) {
     render();
   }
 
+  function answer(correct) {
+    const card = currentCard();
+    if (!card || !flipped) return;
+    options.onAnswer?.(card, correct);
+  }
+
   function onKeyDown(event) {
     if (event.target && ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) {
       return;
@@ -88,6 +100,8 @@ export function createFlashcardSession(root, cards) {
     root.querySelector("[data-fc-flip]")?.addEventListener("click", flip);
     root.querySelector("[data-fc-prev]")?.addEventListener("click", previous);
     root.querySelector("[data-fc-next]")?.addEventListener("click", next);
+    root.querySelector("[data-fc-got-it]")?.addEventListener("click", () => answer(true));
+    root.querySelector("[data-fc-missed]")?.addEventListener("click", () => answer(false));
   }
 
   function activate() {

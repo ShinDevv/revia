@@ -388,6 +388,83 @@ h1 {
   font-size: 0.92rem;
 }
 
+.progress-summary {
+  color: #4d9d2d !important;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+[data-panel="overview"] {
+  display: grid;
+  gap: 18px;
+}
+
+.progress-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.progress-heading strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.progress-bar {
+  height: 14px;
+  margin: 16px 0 8px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.progress-grid div {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.progress-grid strong {
+  font-size: 1.2rem;
+}
+
+.progress-grid span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.answer-prompt {
+  margin: 20px 0 0;
+  font-weight: 800;
+  text-align: center;
+}
+
+.answer-actions {
+  justify-content: center;
+  margin-top: 10px;
+}
+
 .empty-copy,
 .device-note {
   color: var(--muted);
@@ -818,6 +895,10 @@ textarea {
 
   .tabs button {
     padding-inline: 8px;
+  }
+
+  .progress-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .card-menu {
