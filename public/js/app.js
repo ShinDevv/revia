@@ -12,6 +12,36 @@ const MIN_CONTENT_LENGTH = 20;
 const GENERIC_GENERATE_ERROR = "Something went wrong while generating your reviewer. Please try again.";
 let deferredInstallPrompt;
 
+function initTheme() {
+  const root = document.documentElement;
+  const savedTheme = localStorage.getItem("revia-theme");
+  const theme = savedTheme === "dark" ? "dark" : "light";
+  root.dataset.theme = theme;
+
+  const nav = qs(".nav");
+  if (!nav) {
+    return;
+  }
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "theme-toggle";
+  toggle.addEventListener("click", () => {
+    const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = nextTheme;
+    localStorage.setItem("revia-theme", nextTheme);
+    updateThemeToggle(toggle, nextTheme);
+  });
+  nav.append(toggle);
+  updateThemeToggle(toggle, theme);
+}
+
+function updateThemeToggle(toggle, theme) {
+  const isDark = theme === "dark";
+  toggle.textContent = isDark ? "Light mode" : "Dark mode";
+  toggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+}
+
 function initInstallPrompt() {
   const nav = qs(".nav");
   if (!nav || !deferredInstallPrompt || window.matchMedia("(display-mode: standalone)").matches) {
@@ -86,7 +116,13 @@ function escapeHtml(value) {
 function setActiveNav() {
   const page = document.body.dataset.page;
   qsa("[data-nav]").forEach((link) => {
-    link.classList.toggle("is-active", link.dataset.nav === page);
+    const isActive = link.dataset.nav === page;
+    link.classList.toggle("is-active", isActive);
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
   });
 }
 
@@ -283,11 +319,13 @@ function initLibrary() {
 
     if (deleteBtn) {
       pendingId = deleteBtn.dataset.delete;
+      deleteBtn.closest("details")?.removeAttribute("open");
       openModal(deleteModal);
     }
 
     if (renameBtn) {
       pendingId = renameBtn.dataset.rename;
+      renameBtn.closest("details")?.removeAttribute("open");
       const current = getReviewer(pendingId);
       if (renameInput) {
         renameInput.value = current?.title || "";
@@ -454,6 +492,7 @@ function initSharedUi() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
   initInstallPrompt();
   setActiveNav();
   initSharedUi();

@@ -1,5 +1,5 @@
 :root {
-  --bg: #ffffff;
+  --bg: #f8fafc;
   --ink: #111111;
   --muted: #6b7280;
   --line: #e5e7eb;
@@ -13,6 +13,18 @@
   --shadow: 0 10px 30px rgba(17, 17, 17, 0.06);
   --radius: 12px;
   --max: 1080px;
+}
+
+:root[data-theme="dark"] {
+  --bg: #101827;
+  --ink: #f8fafc;
+  --muted: #aab5c5;
+  --line: #2d3b50;
+  --card: #172235;
+  --accent-soft: #172f5f;
+  --danger-soft: #3b2024;
+  --success-soft: #15362d;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
 }
 
 * {
@@ -37,6 +49,18 @@ a {
   color: inherit;
 }
 
+button,
+input,
+textarea,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(a, button, input, textarea, summary):focus-visible {
+  outline: 3px solid rgba(29, 78, 216, 0.32);
+  outline-offset: 3px;
+}
+
 img {
   max-width: 100%;
 }
@@ -57,9 +81,13 @@ img {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
+}
+
+:root[data-theme="dark"] .site-header {
+  background: rgba(16, 24, 39, 0.94);
 }
 
 .header-inner,
@@ -102,6 +130,9 @@ img {
 .nav a {
   text-decoration: none;
   padding: 8px 12px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
   border-radius: 10px;
   color: var(--muted);
   transition: background 0.2s ease, color 0.2s ease;
@@ -113,12 +144,39 @@ img {
   background: #f3f4f6;
 }
 
+.theme-toggle {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
+  background: #f3f4f6;
+}
+
+:root[data-theme="dark"] .theme-toggle:hover,
+:root[data-theme="dark"] .nav a:hover,
+:root[data-theme="dark"] .nav a.is-active,
+:root[data-theme="dark"] .menu-button:hover,
+:root[data-theme="dark"] .card-menu[open] .menu-button,
+:root[data-theme="dark"] .menu-item:hover,
+:root[data-theme="dark"] .menu-item:focus-visible {
+  background: #243249;
+}
+
 .page {
-  padding: 32px 0 72px;
+  padding: 40px 0 72px;
 }
 
 .hero {
-  padding: 48px 0 24px;
+  padding: 64px 0 32px;
+  max-width: 760px;
 }
 
 .eyebrow {
@@ -145,6 +203,7 @@ h1 {
   color: var(--muted);
   font-size: 1.1rem;
   max-width: 42ch;
+  margin-bottom: 24px;
 }
 
 .button {
@@ -178,9 +237,26 @@ h1 {
   color: #fff;
 }
 
+.button-primary:hover {
+  background: #262626;
+}
+
 .button-secondary {
   border-color: var(--line);
   background: #fff;
+}
+
+:root[data-theme="dark"] .button-secondary,
+:root[data-theme="dark"] input[type="text"],
+:root[data-theme="dark"] input[type="search"],
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] .tabs button,
+:root[data-theme="dark"] .flashcard-face,
+:root[data-theme="dark"] .menu-items,
+:root[data-theme="dark"] .modal-card,
+:root[data-theme="dark"] .loading-card {
+  background: #172235;
+  color: var(--ink);
 }
 
 .button-danger {
@@ -225,6 +301,11 @@ h1 {
 .form-card,
 .panel-card {
   padding: 20px;
+}
+
+.form-card {
+  max-width: 760px;
+  margin-top: 28px;
 }
 
 .stat-value {
@@ -294,6 +375,15 @@ textarea {
   font: inherit;
   color: var(--ink);
   background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: 0;
 }
 
 textarea {
@@ -338,6 +428,10 @@ textarea {
   margin-bottom: 24px;
 }
 
+.library-toolbar .field {
+  width: min(100%, 320px);
+}
+
 .library-grid {
   grid-template-columns: 1fr;
 }
@@ -348,6 +442,10 @@ textarea {
   justify-content: space-between;
   gap: 16px;
   align-items: start;
+}
+
+.library-card > div:first-child {
+  min-width: 0;
 }
 
 .card-menu {
@@ -602,6 +700,12 @@ textarea {
     align-items: stretch;
   }
 
+  .header-inner,
+  .page,
+  .hero {
+    width: min(var(--max), calc(100% - 24px));
+  }
+
   .header-inner {
     gap: 10px;
     padding: 14px 0 12px;
@@ -629,6 +733,13 @@ textarea {
 
   .nav {
     justify-content: center;
+    width: 100%;
+  }
+
+  .nav a {
+    flex: 1;
+    justify-content: center;
+    padding-inline: 8px;
   }
 
   .button-row .button {
@@ -637,6 +748,27 @@ textarea {
 
   .library-card {
     padding-right: 68px;
+  }
+
+  .page {
+    padding-top: 28px;
+  }
+
+  .hero {
+    padding-top: 40px;
+  }
+
+  .library-toolbar .field {
+    width: 100%;
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .tabs button {
+    padding-inline: 8px;
   }
 
   .card-menu {

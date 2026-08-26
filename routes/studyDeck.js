@@ -197,6 +197,40 @@ function sendFailure(_req, res) {
   });
 }
 
+function getApiEndpoints() {
+  const configured = process.env.AI_API_URLS || process.env.GEMINI_API_URL;
+  return (configured || "https://smfahim.xyz/ai/gemini/v3")
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean);
+}
+
+async function requestFromEndpoint(endpoint, prompt, timeoutMs) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Accept: "application/json, text/plain",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt }),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`upstream-${response.status}`);
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    return contentType.includes("application/json") ? response.json() : response.text();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function generateStudyDeck(req, res) {
   try {
     const content = asNonEmptyString(req.body && req.body.content);
@@ -223,68 +257,36 @@ async function generateStudyDeck(req, res) {
       return sendFailure(req, res);
     }
 
-    const apiBase = process.env.GEMINI_API_URL || "https://smfahim.xyz/ai/gemini/v3";
     const timeoutMs = Number(process.env.GEMINI_TIMEOUT_MS) || 90000;
     const fullPrompt = buildPrompt(systemPrompt, title, content);
-    const endpoint = `${apiBase}?prompt=${encodeURIComponent(fullPrompt)}`;
+    let timedOut = false;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    for (const endpoint of getApiEndpoints()) {
+      try {
+        const payload = await requestFromEndpoint(endpoint, fullPrompt, timeoutMs);
+        const rawText = extractTextFromGemini(payload);
+        const parsed = parseJsonObject(rawText || payload);
+        const reviewer = validateAndNormalizeDeck(parsed, title);
 
-    let apiResponse;
-    try {
-      apiResponse = await fetch(endpoint, {
-        method: "GET",
-        headers: { Accept: "application/json, text/plain" },
-        signal: controller.signal
-      });
-    } catch (error) {
-      clearTimeout(timeout);
-      if (error && error.name === "AbortError") {
-        return res.status(504).json({
-          success: false,
-          error: "The reviewer took too long to generate. Please try again."
+        return res.json({
+          success: true,
+          reviewer
         });
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          timedOut = true;
+        }
       }
-      return sendFailure(req, res);
-    }
-    clearTimeout(timeout);
-
-    if (!apiResponse.ok) {
-      return sendFailure(req, res);
     }
 
-    const contentType = apiResponse.headers.get("content-type") || "";
-    let payload;
-    try {
-      if (contentType.includes("application/json")) {
-        payload = await apiResponse.json();
-      } else {
-        payload = await apiResponse.text();
-      }
-    } catch (_error) {
-      return sendFailure(req, res);
+    if (timedOut) {
+      return res.status(504).json({
+        success: false,
+        error: "The reviewer took too long to generate. Please try again."
+      });
     }
 
-    let parsed;
-    try {
-      const rawText = extractTextFromGemini(payload);
-      parsed = parseJsonObject(rawText || payload);
-    } catch (_error) {
-      return sendFailure(req, res);
-    }
-
-    let reviewer;
-    try {
-      reviewer = validateAndNormalizeDeck(parsed, title);
-    } catch (_error) {
-      return sendFailure(req, res);
-    }
-
-    return res.json({
-      success: true,
-      reviewer
-    });
+    return sendFailure(req, res);
   } catch (_error) {
     return sendFailure(req, res);
   }
