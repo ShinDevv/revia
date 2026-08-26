@@ -269,7 +269,7 @@ function getApiEndpoints() {
     .filter(Boolean);
 }
 
-async function requestFromEndpoint(endpoint, prompt, timeoutMs) {
+async function requestFromEndpoint(endpoint, prompt, timeoutMs, context = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -280,7 +280,7 @@ async function requestFromEndpoint(endpoint, prompt, timeoutMs) {
         Accept: "application/json, text/plain",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt, ...context }),
       signal: controller.signal
     });
 
@@ -377,7 +377,12 @@ Return only the new flashcards and questions. It is acceptable to return fewer i
     let timedOut = false;
     for (const endpoint of getApiEndpoints()) {
       try {
-        const payload = await requestFromEndpoint(endpoint, expansionPrompt, Number(process.env.GEMINI_TIMEOUT_MS) || 90000);
+        const payload = await requestFromEndpoint(
+          endpoint,
+          expansionPrompt,
+          Number(process.env.GEMINI_TIMEOUT_MS) || 90000,
+          { mode: "expand", reviewer, request }
+        );
         const parsed = parseJsonObject(extractTextFromGemini(payload) || payload);
         const addition = filterExpansion(reviewer, extractExpansion(parsed));
         if (!addition.flashcards.length && !addition.multipleChoice.length) continue;

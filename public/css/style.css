@@ -570,6 +570,12 @@ textarea {
   flex: 0 0 auto;
 }
 
+.reviewer-menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
 .menu-button {
   display: grid;
   place-items: center;
@@ -905,6 +911,11 @@ textarea {
     position: absolute;
     top: 16px;
     right: 16px;
+  }
+
+  .reviewer-menu {
+    top: 0;
+    right: 0;
   }
 
   .menu-button {

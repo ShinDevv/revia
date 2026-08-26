@@ -120,8 +120,6 @@ export function recordFlashcardAnswer(id, cardId, correct) {
   progress.flashcardsStudied += 1;
   progress.flashcardsCorrect += correct ? 1 : 0;
   progress.flashcardsIncorrect += correct ? 0 : 1;
-  progress.currentStreak = correct ? progress.currentStreak + 1 : 0;
-  progress.bestStreak = Math.max(progress.bestStreak, progress.currentStreak);
   progress.lastStudied = new Date().toISOString();
 
   return updateReviewer(id, {
@@ -130,14 +128,24 @@ export function recordFlashcardAnswer(id, cardId, correct) {
   });
 }
 
+export function recordQuizAnswer(id, correct) {
+  const reviewer = getReviewer(id);
+  if (!reviewer) return null;
+  const progress = { ...defaultProgress(), ...reviewer.progress };
+  progress.quizQuestionsAnswered += 1;
+  progress.quizCorrect += correct ? 1 : 0;
+  progress.quizIncorrect += correct ? 0 : 1;
+  progress.currentStreak = correct ? progress.currentStreak + 1 : 0;
+  progress.bestStreak = Math.max(progress.bestStreak, progress.currentStreak);
+  progress.lastStudied = new Date().toISOString();
+  return updateReviewer(id, { progress });
+}
+
 export function recordQuizResult(id, correct, total) {
   const reviewer = getReviewer(id);
   if (!reviewer) return null;
   const progress = { ...defaultProgress(), ...reviewer.progress };
   progress.quizAttempts += 1;
-  progress.quizQuestionsAnswered += total;
-  progress.quizCorrect += correct;
-  progress.quizIncorrect += total - correct;
   progress.lastStudied = new Date().toISOString();
   return updateReviewer(id, { progress });
 }

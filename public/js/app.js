@@ -6,11 +6,12 @@ import {
   updateReviewer,
   getReviewerProgress,
   recordFlashcardAnswer,
+  recordQuizAnswer,
   recordQuizResult,
   recordStudySession
-} from "./storage.js?v=8";
-import { createFlashcardSession } from "./flashcards.js?v=8";
-import { createQuizSession } from "./quiz.js?v=8";
+} from "./storage.js?v=12";
+import { createFlashcardSession } from "./flashcards.js?v=12";
+import { createQuizSession } from "./quiz.js?v=12";
 
 const MIN_CONTENT_LENGTH = 20;
 const GENERIC_GENERATE_ERROR = "Something went wrong while generating your reviewer. Please try again.";
@@ -287,6 +288,7 @@ function reviewerCard(reviewer) {
         <div class="menu-items">
           <a class="menu-item" href="/reviewer?id=${encodeURIComponent(reviewer.id)}">Open</a>
           <button type="button" class="menu-item" data-rename="${escapeHtml(reviewer.id)}">Rename</button>
+          <button type="button" class="menu-item" data-expand="${escapeHtml(reviewer.id)}">Expand Reviewer</button>
           <button type="button" class="menu-item menu-item-danger" data-delete="${escapeHtml(reviewer.id)}">Delete</button>
         </div>
       </details>
@@ -301,6 +303,10 @@ function initLibrary() {
   const deleteModal = qs("[data-delete-modal]");
   const renameModal = qs("[data-rename-modal]");
   const renameInput = qs("#rename-title");
+  const expandModal = qs("[data-expand-modal]");
+  const expandRequest = qs("#expand-request");
+  const expandAlert = qs("[data-expand-alert]");
+  const expandButton = qs("[data-confirm-expand]");
   let pendingId = "";
 
   function render(filter = "") {
@@ -329,6 +335,7 @@ function initLibrary() {
   list.addEventListener("click", (event) => {
     const deleteBtn = event.target.closest("[data-delete]");
     const renameBtn = event.target.closest("[data-rename]");
+    const expandBtn = event.target.closest("[data-expand]");
 
     if (deleteBtn) {
       pendingId = deleteBtn.dataset.delete;
@@ -344,6 +351,57 @@ function initLibrary() {
         renameInput.value = current?.title || "";
       }
       openModal(renameModal);
+    }
+
+    if (expandBtn) {
+      pendingId = expandBtn.dataset.expand;
+      expandBtn.closest("details")?.removeAttribute("open");
+      if (expandRequest) expandRequest.value = "";
+      showAlert(expandAlert, "");
+      openModal(expandModal);
+    }
+  });
+
+  expandButton?.addEventListener("click", async () => {
+    const request = expandRequest?.value.trim();
+    if (!request) {
+      showAlert(expandAlert, "Please describe what study material to add.");
+      expandRequest?.focus();
+      return;
+    }
+    expandButton.disabled = true;
+    expandButton.textContent = "Expanding your reviewer...";
+    try {
+      const current = getReviewer(pendingId);
+      const response = await fetch("/api/study-deck/expand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewer: current, request })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success || !data.addition) {
+        throw new Error(data.error || "expand");
+      }
+      if (!data.addition.flashcards.length && !data.addition.multipleChoice.length) {
+        showAlert(expandAlert, "No new unique material could be added.");
+        return;
+      }
+      saveReviewer({
+        ...current,
+        flashcards: [...(current.flashcards || []), ...data.addition.flashcards],
+        multipleChoice: [...(current.multipleChoice || []), ...data.addition.multipleChoice],
+        updatedAt: data.updatedAt
+      });
+      closeModal(expandModal);
+      render(search?.value || "");
+    } catch (error) {
+      const message = error?.message === "No new unique material could be added."
+        ? error.message
+        : "Unable to expand your reviewer. Your existing reviewer is unchanged.";
+      showAlert(expandAlert, message);
+    } finally {
+      expandButton.disabled = false;
+      expandButton.textContent = "Expand Reviewer";
     }
   });
 
@@ -378,6 +436,7 @@ function initLibrary() {
     button.addEventListener("click", () => {
       closeModal(deleteModal);
       closeModal(renameModal);
+      closeModal(expandModal);
     });
   });
 
@@ -434,6 +493,10 @@ function initReviewer() {
     }
   });
   createQuizSession(quizRoot, reviewer.multipleChoice || [], {
+    onAnswer(correct) {
+      recordQuizAnswer(id, correct);
+      renderProgress();
+    },
     onComplete(correct, total) {
       recordQuizResult(id, correct, total);
       renderProgress();
@@ -483,12 +546,19 @@ function initReviewer() {
   const expandButton = qs("[data-confirm-expand]");
 
   qs("[data-open-rename]")?.addEventListener("click", () => {
+    qs(".reviewer-menu")?.removeAttribute("open");
     if (renameInput) renameInput.value = reviewer.title;
     openModal(renameModal);
   });
 
-  qs("[data-open-delete]")?.addEventListener("click", () => openModal(deleteModal));
-  qs("[data-open-expand]")?.addEventListener("click", () => openModal(expandModal));
+  qs("[data-open-delete]")?.addEventListener("click", () => {
+    qs(".reviewer-menu")?.removeAttribute("open");
+    openModal(deleteModal);
+  });
+  qs("[data-open-expand]")?.addEventListener("click", () => {
+    qs(".reviewer-menu")?.removeAttribute("open");
+    openModal(expandModal);
+  });
 
   expandButton?.addEventListener("click", async () => {
     const request = expandRequest?.value.trim();
@@ -558,6 +628,7 @@ function initReviewer() {
     button.addEventListener("click", () => {
       closeModal(deleteModal);
       closeModal(renameModal);
+      closeModal(expandModal);
     });
   });
 

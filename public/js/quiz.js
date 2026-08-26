@@ -133,8 +133,10 @@ export function createQuizSession(root, questions, options = {}) {
     state.submitted = true;
     if (state.selected === question.answerIndex) {
       state.correct += 1;
+      options.onAnswer?.(true);
     } else {
       state.incorrect += 1;
+      options.onAnswer?.(false);
     }
     render();
   }
