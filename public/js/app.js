@@ -9,9 +9,9 @@ import {
   recordQuizAnswer,
   recordQuizResult,
   recordStudySession
-} from "./storage.js?v=12";
-import { createFlashcardSession } from "./flashcards.js?v=12";
-import { createQuizSession } from "./quiz.js?v=12";
+} from "./storage.js?v=14";
+import { createFlashcardSession } from "./flashcards.js?v=14";
+import { createQuizSession } from "./quiz.js?v=14";
 
 const MIN_CONTENT_LENGTH = 20;
 const GENERIC_GENERATE_ERROR = "Something went wrong while generating your reviewer. Please try again.";
@@ -288,7 +288,6 @@ function reviewerCard(reviewer) {
         <div class="menu-items">
           <a class="menu-item" href="/reviewer?id=${encodeURIComponent(reviewer.id)}">Open</a>
           <button type="button" class="menu-item" data-rename="${escapeHtml(reviewer.id)}">Rename</button>
-          <button type="button" class="menu-item" data-expand="${escapeHtml(reviewer.id)}">Expand Reviewer</button>
           <button type="button" class="menu-item menu-item-danger" data-delete="${escapeHtml(reviewer.id)}">Delete</button>
         </div>
       </details>
@@ -303,10 +302,6 @@ function initLibrary() {
   const deleteModal = qs("[data-delete-modal]");
   const renameModal = qs("[data-rename-modal]");
   const renameInput = qs("#rename-title");
-  const expandModal = qs("[data-expand-modal]");
-  const expandRequest = qs("#expand-request");
-  const expandAlert = qs("[data-expand-alert]");
-  const expandButton = qs("[data-confirm-expand]");
   let pendingId = "";
 
   function render(filter = "") {
@@ -335,7 +330,6 @@ function initLibrary() {
   list.addEventListener("click", (event) => {
     const deleteBtn = event.target.closest("[data-delete]");
     const renameBtn = event.target.closest("[data-rename]");
-    const expandBtn = event.target.closest("[data-expand]");
 
     if (deleteBtn) {
       pendingId = deleteBtn.dataset.delete;
@@ -353,56 +347,6 @@ function initLibrary() {
       openModal(renameModal);
     }
 
-    if (expandBtn) {
-      pendingId = expandBtn.dataset.expand;
-      expandBtn.closest("details")?.removeAttribute("open");
-      if (expandRequest) expandRequest.value = "";
-      showAlert(expandAlert, "");
-      openModal(expandModal);
-    }
-  });
-
-  expandButton?.addEventListener("click", async () => {
-    const request = expandRequest?.value.trim();
-    if (!request) {
-      showAlert(expandAlert, "Please describe what study material to add.");
-      expandRequest?.focus();
-      return;
-    }
-    expandButton.disabled = true;
-    expandButton.textContent = "Expanding your reviewer...";
-    try {
-      const current = getReviewer(pendingId);
-      const response = await fetch("/api/study-deck/expand", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reviewer: current, request })
-      });
-      const data = await response.json();
-      if (!response.ok || !data.success || !data.addition) {
-        throw new Error(data.error || "expand");
-      }
-      if (!data.addition.flashcards.length && !data.addition.multipleChoice.length) {
-        showAlert(expandAlert, "No new unique material could be added.");
-        return;
-      }
-      saveReviewer({
-        ...current,
-        flashcards: [...(current.flashcards || []), ...data.addition.flashcards],
-        multipleChoice: [...(current.multipleChoice || []), ...data.addition.multipleChoice],
-        updatedAt: data.updatedAt
-      });
-      closeModal(expandModal);
-      render(search?.value || "");
-    } catch (error) {
-      const message = error?.message === "No new unique material could be added."
-        ? error.message
-        : "Unable to expand your reviewer. Your existing reviewer is unchanged.";
-      showAlert(expandAlert, message);
-    } finally {
-      expandButton.disabled = false;
-      expandButton.textContent = "Expand Reviewer";
-    }
   });
 
   qs("[data-confirm-delete]")?.addEventListener("click", () => {
@@ -436,7 +380,6 @@ function initLibrary() {
     button.addEventListener("click", () => {
       closeModal(deleteModal);
       closeModal(renameModal);
-      closeModal(expandModal);
     });
   });
 
@@ -471,15 +414,20 @@ function initReviewer() {
     const percent = cards.length ? Math.round((mastered / cards.length) * 100) : 0;
     const answered = progress.quizQuestionsAnswered || 0;
     const accuracy = answered ? Math.round((progress.quizCorrect / answered) * 100) : 0;
-    qs("[data-mastery-percent]").textContent = `${percent}%`;
-    qs("[data-mastery-bar]").style.width = `${percent}%`;
-    qs("[data-mastery-label]").textContent = `${mastered} / ${cards.length} mastered`;
-    qs("[data-current-streak]").textContent = String(progress.currentStreak);
-    qs("[data-best-streak]").textContent = String(progress.bestStreak);
-    qs("[data-quiz-accuracy]").textContent = `${accuracy}%`;
-    qs("[data-quiz-attempts]").textContent = String(progress.quizAttempts);
-    qs("[data-study-sessions]").textContent = String(progress.studySessions);
-    qs("[data-last-studied]").textContent = progress.lastStudied ? formatDate(progress.lastStudied) : "Not yet";
+    const setText = (selector, value) => {
+      const element = qs(selector);
+      if (element) element.textContent = value;
+    };
+    setText("[data-mastery-percent]", `${percent}%`);
+    const masteryBar = qs("[data-mastery-bar]");
+    if (masteryBar) masteryBar.style.width = `${percent}%`;
+    setText("[data-mastery-label]", `${mastered} / ${cards.length} mastered`);
+    setText("[data-current-streak]", String(progress.currentStreak));
+    setText("[data-best-streak]", String(progress.bestStreak));
+    setText("[data-quiz-accuracy]", `${accuracy}%`);
+    setText("[data-quiz-attempts]", String(progress.quizAttempts));
+    setText("[data-study-sessions]", String(progress.studySessions));
+    setText("[data-last-studied]", progress.lastStudied ? formatDate(progress.lastStudied) : "Not yet");
   }
 
   renderProgress();
@@ -540,10 +488,6 @@ function initReviewer() {
   const deleteModal = qs("[data-delete-modal]");
   const renameModal = qs("[data-rename-modal]");
   const renameInput = qs("#rename-title");
-  const expandModal = qs("[data-expand-modal]");
-  const expandRequest = qs("#expand-request");
-  const expandAlert = qs("[data-expand-alert]");
-  const expandButton = qs("[data-confirm-expand]");
 
   qs("[data-open-rename]")?.addEventListener("click", () => {
     qs(".reviewer-menu")?.removeAttribute("open");
@@ -554,49 +498,6 @@ function initReviewer() {
   qs("[data-open-delete]")?.addEventListener("click", () => {
     qs(".reviewer-menu")?.removeAttribute("open");
     openModal(deleteModal);
-  });
-  qs("[data-open-expand]")?.addEventListener("click", () => {
-    qs(".reviewer-menu")?.removeAttribute("open");
-    openModal(expandModal);
-  });
-
-  expandButton?.addEventListener("click", async () => {
-    const request = expandRequest?.value.trim();
-    if (!request) {
-      showAlert(expandAlert, "Please describe what you want to add.");
-      expandRequest?.focus();
-      return;
-    }
-    expandButton.disabled = true;
-    expandButton.textContent = "Expanding your reviewer...";
-    showAlert(expandAlert, "");
-    try {
-      const current = getReviewer(id);
-      const response = await fetch("/api/study-deck/expand", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reviewer: current, request })
-      });
-      const data = await response.json();
-      if (!response.ok || !data.success || !data.addition) throw new Error("expand");
-      const addition = data.addition;
-      if (!addition.flashcards.length && !addition.multipleChoice.length) {
-        showAlert(expandAlert, "No new unique material could be added.");
-        return;
-      }
-      saveReviewer({
-        ...current,
-        flashcards: [...(current.flashcards || []), ...addition.flashcards],
-        multipleChoice: [...(current.multipleChoice || []), ...addition.multipleChoice],
-        updatedAt: data.updatedAt
-      });
-      window.location.reload();
-    } catch (_error) {
-      showAlert(expandAlert, "Unable to expand your reviewer. Your existing reviewer is unchanged.");
-    } finally {
-      expandButton.disabled = false;
-      expandButton.textContent = "Expand Reviewer";
-    }
   });
 
   qs("[data-confirm-delete]")?.addEventListener("click", () => {
@@ -628,7 +529,6 @@ function initReviewer() {
     button.addEventListener("click", () => {
       closeModal(deleteModal);
       closeModal(renameModal);
-      closeModal(expandModal);
     });
   });
 

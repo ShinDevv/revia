@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const path = require("path");
-const { generateStudyDeck, expandStudyDeck } = require("./routes/studyDeck");
+const { generateStudyDeck } = require("./routes/studyDeck");
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
@@ -12,7 +12,6 @@ app.use(express.json({ limit: "256kb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/api/study-deck", generateStudyDeck);
-app.post("/api/study-deck/expand", expandStudyDeck);
 
 app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") {

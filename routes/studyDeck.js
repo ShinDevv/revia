@@ -67,7 +67,7 @@ function extractTextFromGemini(payload) {
     }
   }
 
-  if ((payload.title && payload.flashcards && payload.multipleChoice) || payload.flashcards || payload.multipleChoice) {
+  if (payload.title && payload.flashcards && payload.multipleChoice) {
     return JSON.stringify(payload);
   }
 
@@ -190,70 +190,6 @@ function buildPrompt(systemPrompt, title, content) {
   return `${systemPrompt}\n\n${topicLine}Study material:\n${content}`;
 }
 
-function normalizeComparable(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function isNearDuplicate(candidate, existing) {
-  if (candidate === existing || !candidate || !existing) return candidate === existing;
-  const candidateWords = new Set(candidate.split(" "));
-  const existingWords = new Set(existing.split(" "));
-  const shared = [...candidateWords].filter((word) => existingWords.has(word)).length;
-  return shared / Math.max(candidateWords.size, existingWords.size) >= 0.85;
-}
-
-function extractExpansion(raw) {
-  const flashcards = Array.isArray(raw.flashcards) ? raw.flashcards : [];
-  const multipleChoice = Array.isArray(raw.multipleChoice) ? raw.multipleChoice : [];
-  return {
-    flashcards: flashcards.filter((card) => asNonEmptyString(card?.front) && asNonEmptyString(card?.back)).map((card) => ({
-      id: uniqueId("fc"),
-      front: asNonEmptyString(card.front),
-      back: asNonEmptyString(card.back),
-      stats: { correct: 0, incorrect: 0, streak: 0, mastered: false }
-    })),
-    multipleChoice: multipleChoice.filter((item) => (
-      asNonEmptyString(item?.question) &&
-      asNonEmptyString(item?.explanation) &&
-      Array.isArray(item.options) && item.options.length === 4 && item.options.every((option) => asNonEmptyString(option)) &&
-      Number.isInteger(Number(item.answerIndex)) && Number(item.answerIndex) >= 0 && Number(item.answerIndex) <= 3
-    )).map((item) => ({
-      id: uniqueId("mcq"),
-      question: asNonEmptyString(item.question),
-      options: item.options.map(asNonEmptyString),
-      answerIndex: Number(item.answerIndex),
-      explanation: asNonEmptyString(item.explanation)
-    }))
-  };
-}
-
-function filterExpansion(existing, addition) {
-  const flashcardKeys = new Set((existing.flashcards || []).map((card) => normalizeComparable(`${card.front} ${card.back}`)));
-  const questionKeys = new Set((existing.multipleChoice || []).map((item) => normalizeComparable(`${item.question} ${item.options?.[item.answerIndex] || ""}`)));
-  const flashcards = [];
-  const multipleChoice = [];
-
-  addition.flashcards.forEach((card) => {
-    const key = normalizeComparable(`${card.front} ${card.back}`);
-    if (key && ![...flashcardKeys].some((existing) => isNearDuplicate(key, existing))) {
-      flashcardKeys.add(key);
-      flashcards.push(card);
-    }
-  });
-  addition.multipleChoice.forEach((item) => {
-    const key = normalizeComparable(`${item.question} ${item.options[item.answerIndex]}`);
-    if (key && ![...questionKeys].some((existing) => isNearDuplicate(key, existing))) {
-      questionKeys.add(key);
-      multipleChoice.push(item);
-    }
-  });
-  return { flashcards, multipleChoice };
-}
-
 function sendFailure(_req, res) {
   return res.status(502).json({
     success: false,
@@ -269,7 +205,7 @@ function getApiEndpoints() {
     .filter(Boolean);
 }
 
-async function requestFromEndpoint(endpoint, prompt, timeoutMs, context = {}) {
+async function requestFromEndpoint(endpoint, prompt, timeoutMs) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -280,7 +216,7 @@ async function requestFromEndpoint(endpoint, prompt, timeoutMs, context = {}) {
         Accept: "application/json, text/plain",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ prompt, ...context }),
+      body: JSON.stringify({ prompt }),
       signal: controller.signal
     });
 
@@ -356,56 +292,6 @@ async function generateStudyDeck(req, res) {
   }
 }
 
-async function expandStudyDeck(req, res) {
-  try {
-    const reviewer = req.body && req.body.reviewer;
-    const request = asNonEmptyString(req.body && req.body.request);
-    if (!reviewer || !request) {
-      return res.status(400).json({ success: false, error: "Please describe what to add." });
-    }
-
-    const systemPrompt = loadSystemPrompt();
-    const expansionPrompt = `${systemPrompt}
-
-You are expanding an existing study deck. Return ONLY a raw JSON object with "flashcards" and "multipleChoice" arrays. Create genuinely new material and NEVER repeat, rephrase, or test the same fact as the existing content. Existing title: ${reviewer.title}
-Existing summary: ${reviewer.summary}
-Existing flashcards: ${JSON.stringify(reviewer.flashcards || [])}
-Existing multiple-choice questions: ${JSON.stringify(reviewer.multipleChoice || [])}
-User expansion request: ${request}
-Return only the new flashcards and questions. It is acceptable to return fewer items than requested if no more unique material is supported.`;
-
-    let timedOut = false;
-    for (const endpoint of getApiEndpoints()) {
-      try {
-        const payload = await requestFromEndpoint(
-          endpoint,
-          expansionPrompt,
-          Number(process.env.GEMINI_TIMEOUT_MS) || 90000,
-          { mode: "expand", reviewer, request }
-        );
-        const parsed = parseJsonObject(extractTextFromGemini(payload) || payload);
-        const addition = filterExpansion(reviewer, extractExpansion(parsed));
-        if (!addition.flashcards.length && !addition.multipleChoice.length) continue;
-        return res.json({
-          success: true,
-          addition,
-          updatedAt: new Date().toISOString()
-        });
-      } catch (error) {
-        if (error && error.name === "AbortError") timedOut = true;
-      }
-    }
-
-    return res.status(timedOut ? 504 : 502).json({
-      success: false,
-      error: timedOut ? "The expansion took too long." : "Unable to expand your reviewer."
-    });
-  } catch (_error) {
-    return sendFailure(req, res);
-  }
-}
-
 module.exports = {
-  generateStudyDeck,
-  expandStudyDeck
+  generateStudyDeck
 };

@@ -73,13 +73,9 @@ The reviewer must contain a title, summary, at least three flashcards, and at le
 | `/library` | Browse saved reviewers |
 | `/reviewer?id=...` | Study a reviewer |
 | `POST /api/study-deck` | Generate reviewer data |
-| `POST /api/study-deck/expand` | Add unique flashcards and quiz questions |
-
-## Progress and expansion
+## Progress
 
 Flashcard ratings, mastery, streaks, quiz results, study sessions, and last-studied dates are saved inside each reviewer in local storage. Existing reviewers are upgraded with default progress values automatically.
-
-From a reviewer page, choose **Expand Reviewer** and describe the material to add. The server sends the existing deck with the request, filters exact normalized duplicates from the response, and merges only new content. Existing content and progress are preserved when expansion fails or produces no unique material.
 
 ## Data and privacy
 
