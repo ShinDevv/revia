@@ -233,11 +233,14 @@ function reviewerCard(reviewer) {
         <p class="meta">${reviewer.flashcards?.length || 0} flashcards · ${reviewer.multipleChoice?.length || 0} questions</p>
         <p class="meta">Created ${formatDate(reviewer.createdAt)}</p>
       </div>
-      <div class="card-actions">
-        <a class="button button-primary" href="/reviewer?id=${encodeURIComponent(reviewer.id)}">Open</a>
-        <button type="button" class="button button-secondary" data-rename="${escapeHtml(reviewer.id)}">Rename</button>
-        <button type="button" class="button button-danger" data-delete="${escapeHtml(reviewer.id)}">Delete</button>
-      </div>
+      <details class="card-menu">
+        <summary class="menu-button" aria-label="Actions for ${escapeHtml(reviewer.title)}">&#8942;</summary>
+        <div class="menu-items">
+          <a class="menu-item" href="/reviewer?id=${encodeURIComponent(reviewer.id)}">Open</a>
+          <button type="button" class="menu-item" data-rename="${escapeHtml(reviewer.id)}">Rename</button>
+          <button type="button" class="menu-item menu-item-danger" data-delete="${escapeHtml(reviewer.id)}">Delete</button>
+        </div>
+      </details>
     </article>
   `;
 }
