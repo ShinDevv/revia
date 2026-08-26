@@ -259,6 +259,21 @@ h1 {
   color: var(--ink);
 }
 
+:root[data-theme="dark"] .button-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+:root[data-theme="dark"] .button-primary:hover {
+  background: #2563eb;
+}
+
+:root[data-theme="dark"] .button-danger {
+  background: var(--danger-soft);
+  color: #ffb4ab;
+  border-color: #6b2c32;
+}
+
 .button-danger {
   background: var(--danger-soft);
   color: var(--danger);
@@ -540,6 +555,12 @@ textarea {
   background: var(--ink);
   color: #fff;
   border-color: var(--ink);
+}
+
+:root[data-theme="dark"] .tabs button.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .flashcard-wrap {
