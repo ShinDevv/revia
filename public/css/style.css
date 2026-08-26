@@ -343,6 +343,7 @@ textarea {
 }
 
 .library-card {
+  position: relative;
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -630,9 +631,27 @@ textarea {
     justify-content: center;
   }
 
-  .card-actions .button,
   .button-row .button {
     width: 100%;
+  }
+
+  .library-card {
+    padding-right: 68px;
+  }
+
+  .card-menu {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+
+  .menu-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .menu-item {
+    min-height: 44px;
   }
 
   .flashcard-inner,
