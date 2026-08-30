@@ -1,5 +1,6 @@
 export function createQuizSession(root, questions, options = {}) {
   const items = Array.isArray(questions) ? questions.map((item) => ({ ...item })) : [];
+  const optionLetters = ["A", "B", "C", "D"];
   const state = {
     index: 0,
     selected: null,
@@ -21,10 +22,10 @@ export function createQuizSession(root, questions, options = {}) {
 
     if (submitted && isCorrect) {
       extraClass = "is-correct";
-      status = "Correct option";
+      status = "Correct choice! 🎉";
     } else if (submitted && selected && !isCorrect) {
       extraClass = "is-incorrect";
-      status = "Your answer, incorrect";
+      status = "Oops, not quite! 💡";
     } else if (selected) {
       extraClass = "is-selected";
     }
@@ -38,7 +39,7 @@ export function createQuizSession(root, questions, options = {}) {
           ${selected ? "checked" : ""}
           ${submitted ? "disabled" : ""}
         >
-        <span class="quiz-option-marker" aria-hidden="true"></span>
+        <span class="quiz-option-marker" aria-hidden="true">${optionLetters[optionIndex] || optionIndex + 1}</span>
         <span class="quiz-option-text">${escapeHtml(option)}</span>
         ${status ? `<span class="visually-hidden">${status}</span>` : ""}
       </label>
@@ -61,21 +62,33 @@ export function createQuizSession(root, questions, options = {}) {
     }
 
     if (!items.length) {
-      stage.innerHTML = `<p class="empty-copy">This reviewer has no quiz questions.</p>`;
+      stage.innerHTML = `<p class="empty-copy">🎈 This reviewer has no quiz questions yet.</p>`;
       return;
     }
 
     if (state.index >= items.length) {
       const total = items.length;
       const percent = total ? Math.round((state.correct / total) * 100) : 0;
+      let starRating = "⭐⭐⭐";
+      let encouragement = "Incredible Job! You're a study champion! 🏆✨";
+      if (percent < 60) {
+        starRating = "⭐";
+        encouragement = "Great practice! Review your cards and try again to earn more stars! 💪🌱";
+      } else if (percent < 90) {
+        starRating = "⭐⭐";
+        encouragement = "Super work! You're so close to perfection! 🚀✨";
+      }
+
       stage.innerHTML = `
         <div class="quiz-complete">
-          <p class="eyebrow">Quiz complete</p>
-          <h2>Score: ${state.correct} / ${total}</h2>
+          <div style="font-size:3.5rem;margin-bottom:10px;">${starRating}</div>
+          <span class="eyebrow">🎉 Quiz Complete!</span>
+          <h2>Final Score: ${state.correct} / ${total}</h2>
           <p class="quiz-percent">${percent}%</p>
-          <div class="button-row">
-            <button type="button" class="button button-primary" data-quiz-retry>Retry Quiz</button>
-            <button type="button" class="button button-secondary" data-quiz-back>Back to Reviewer</button>
+          <p class="lede" style="margin: 0 auto 28px;max-width:38ch;">${encouragement}</p>
+          <div class="button-row" style="justify-content:center;">
+            <button type="button" class="button button-primary" data-quiz-retry>🔄 Retry Quiz</button>
+            <button type="button" class="button button-secondary" data-quiz-back>📊 Back to Overview</button>
           </div>
         </div>
       `;
@@ -92,12 +105,15 @@ export function createQuizSession(root, questions, options = {}) {
 
     const feedback = state.submitted
       ? state.selected === question.answerIndex
-        ? `<div class="quiz-feedback is-correct" role="status"><strong>Correct!</strong><p>${escapeHtml(question.explanation)}</p></div>`
-        : `<div class="quiz-feedback is-incorrect" role="status"><strong>Incorrect</strong><p>Correct answer: ${escapeHtml(question.options[question.answerIndex])}</p><p>${escapeHtml(question.explanation)}</p></div>`
+        ? `<div class="quiz-feedback is-correct" role="status"><strong>🎉 Awesome! You got it right!</strong><p>${escapeHtml(question.explanation)}</p></div>`
+        : `<div class="quiz-feedback is-incorrect" role="status"><strong>💡 Keep learning!</strong><p>Correct answer: <strong>${escapeHtml(question.options[question.answerIndex])}</strong></p><p>${escapeHtml(question.explanation)}</p></div>`
       : "";
 
     stage.innerHTML = `
-      <p class="eyebrow">Question ${state.index + 1} of ${items.length}</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span class="eyebrow">Question ${state.index + 1} of ${items.length}</span>
+        <span class="badge-tag">🎯 Quiz Game</span>
+      </div>
       <h2 class="quiz-question">${escapeHtml(question.question)}</h2>
       <fieldset class="quiz-options" ${state.submitted ? "disabled" : ""}>
         <legend class="visually-hidden">Answer choices</legend>
@@ -107,8 +123,8 @@ export function createQuizSession(root, questions, options = {}) {
       <div class="button-row">
         ${
           state.submitted
-            ? `<button type="button" class="button button-primary" data-quiz-next>${state.index === items.length - 1 ? "See Score" : "Next Question"}</button>`
-            : `<button type="button" class="button button-primary" data-quiz-submit ${state.selected === null ? "disabled" : ""}>Submit Answer</button>`
+            ? `<button type="button" class="button button-primary" data-quiz-next>${state.index === items.length - 1 ? "See Final Score 🏆" : "Next Question ➡️"}</button>`
+            : `<button type="button" class="button button-primary" data-quiz-submit ${state.selected === null ? "disabled" : ""}>Submit Answer ✨</button>`
         }
       </div>
     `;

@@ -1,4 +1,4 @@
-const CACHE_NAME = "revia-shell-v16";
+const CACHE_NAME = "revia-shell-v23";
 const PRECACHE_URLS = [
   "/",
   "/create",

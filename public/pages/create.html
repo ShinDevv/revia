@@ -3,57 +3,149 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1d4ed8">
+  <meta name="theme-color" content="#7ed957">
   <meta name="description" content="Turn your study notes into flashcards and quiz questions.">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
   <title>Create Reviewer · Revia</title>
-  <link rel="stylesheet" href="/css/style.css?v=10">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css?v=23">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body data-page="create">
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="/">
-        Revia
+        <img class="brand-icon" src="/icons/icon.svg" alt="" aria-hidden="true">
+        <span>Revia</span>
       </a>
+
+      <div class="header-gamify">
+        <div class="stat-pill pill-streak" title="Daily study streak">
+          <span aria-hidden="true">🔥</span>
+          <span data-global-streak>0</span>
+          <span>Streak</span>
+        </div>
+        <div class="stat-pill pill-xp" title="Total Study XP">
+          <span aria-hidden="true">⭐</span>
+          <span data-global-xp>0</span>
+          <span>XP</span>
+        </div>
+      </div>
+
       <nav class="nav" aria-label="Primary">
-        <a href="/" data-nav="dashboard">Dashboard</a>
-        <a href="/create" data-nav="create">Create</a>
-        <a href="/library" data-nav="library">Library</a>
+        <a href="/" data-nav="dashboard">🏠 Dashboard</a>
+        <a href="/create" data-nav="create">✨ Create</a>
+        <a href="/library" data-nav="library">📚 Library</a>
       </nav>
+
+      <!-- Unified Header Kebab Menu -->
+      <details class="header-kebab-menu" data-header-menu>
+        <summary class="header-kebab-btn" aria-label="Account & settings menu">⋮</summary>
+        <div class="header-kebab-dropdown">
+          <div data-menu-auth-section></div>
+          <div class="menu-divider"></div>
+          <button type="button" class="menu-item" data-menu-theme-toggle>
+            <span data-theme-icon>🌙</span>
+            <span data-theme-label>Dark Mode</span>
+          </button>
+          <div data-menu-install-section></div>
+        </div>
+      </details>
     </div>
   </header>
 
   <main class="page">
-    <p class="eyebrow">Create Reviewer</p>
-    <h1>Turn notes into a study deck.</h1>
-    <p class="lede">Paste topics, pointers, or lecture notes. Revia will generate flashcards and multiple-choice questions.</p>
+    <!-- Mascot Introduction Row -->
+    <div class="hero-mascot-row" style="margin-bottom:24px;">
+      <div class="mascot-wrap">
+        <svg class="mascot-avatar" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="65" r="42" fill="#7ed957" stroke="#181d14" stroke-width="6"/>
+          <path d="M60 25 C60 10, 78 8, 80 20 C82 32, 63 30, 60 28 Z" fill="#56c927" stroke="#181d14" stroke-width="4"/>
+          <path d="M60 25 C60 12, 44 10, 42 22 C40 34, 57 30, 60 28 Z" fill="#7ed957" stroke="#181d14" stroke-width="4"/>
+          <ellipse cx="46" cy="60" rx="7" ry="10" fill="#181d14"/>
+          <ellipse cx="74" cy="60" rx="7" ry="10" fill="#181d14"/>
+          <circle cx="44" cy="56" r="3" fill="#ffffff"/>
+          <circle cx="48" cy="64" r="1.5" fill="#ffffff"/>
+          <circle cx="72" cy="56" r="3" fill="#ffffff"/>
+          <circle cx="76" cy="64" r="1.5" fill="#ffffff"/>
+          <ellipse cx="36" cy="70" rx="6" ry="4" fill="#ff7556" opacity="0.85"/>
+          <ellipse cx="84" cy="70" rx="6" ry="4" fill="#ff7556" opacity="0.85"/>
+          <path d="M52 68 Q60 78 68 68" stroke="#181d14" stroke-width="5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="mascot-nameplate">Revy</span>
+      </div>
+
+      <div class="speech-bubble">
+        <p>Paste your lecture notes, pointers, or study guide below! I'll craft super cool flashcards and quiz games for you! 📝🎉</p>
+      </div>
+    </div>
 
     <form class="form-card" data-create-form>
       <div class="field">
-        <label for="title">Title / topic <span class="meta">(optional)</span></label>
-        <input id="title" name="title" type="text" maxlength="120" placeholder="Topic name here...">
+        <label for="title">Topic or Title <span class="meta">(optional)</span></label>
+        <input id="title" name="title" type="text" maxlength="120" placeholder="e.g. Solar System Planets, Cell Biology, World War II...">
       </div>
 
       <div class="field">
-        <label for="content">Study material</label>
-        <textarea id="content" name="content" required placeholder="Paste your notes, topics, pointers, or reviewer here..."></textarea>
+        <label for="content">Study Material 📖</label>
+        <textarea id="content" name="content" required placeholder="Paste your lesson notes, textbook chapter, definitions, or study pointers here..."></textarea>
         <p class="char-count" data-char-count>0 characters</p>
       </div>
 
-      <button class="button button-primary" type="submit" data-generate>Generate Reviewer</button>
+      <button class="button button-primary" type="submit" data-generate>
+        <span>✨ Generate Study Deck</span>
+      </button>
       <div class="alert is-error" data-alert hidden></div>
     </form>
   </main>
 
+  <!-- Bouncy Toy Loading Overlay -->
   <div class="loading" data-loading hidden>
     <div class="loading-card" role="status" aria-live="polite">
-      <div class="spinner" aria-hidden="true"></div>
-      <p><strong>Generating your reviewer</strong></p>
-      <p class="meta">This can take a few seconds.</p>
+      <div class="spinner-mascot">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="65" r="42" fill="#7ed957" stroke="#181d14" stroke-width="6"/>
+          <path d="M60 25 C60 10, 78 8, 80 20 C82 32, 63 30, 60 28 Z" fill="#56c927" stroke="#181d14" stroke-width="4"/>
+          <path d="M60 25 C60 12, 44 10, 42 22 C40 34, 57 30, 60 28 Z" fill="#7ed957" stroke="#181d14" stroke-width="4"/>
+          <ellipse cx="46" cy="60" rx="7" ry="10" fill="#181d14"/>
+          <circle cx="44" cy="56" r="3" fill="#ffffff"/>
+          <path d="M68 62 Q74 54 80 62" stroke="#181d14" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <ellipse cx="36" cy="70" rx="6" ry="4" fill="#ff7556" opacity="0.85"/>
+          <ellipse cx="84" cy="70" rx="6" ry="4" fill="#ff7556" opacity="0.85"/>
+          <path d="M52 68 Q60 78 68 68" stroke="#181d14" stroke-width="5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <h2>Crafting your reviewer...</h2>
+      <p class="lede" style="font-size:1rem;margin-bottom:0;">Revy is building flashcards & quizzes for you! 🌟</p>
     </div>
   </div>
 
-  <script type="module" src="/js/app.js?v=16"></script>
+  <!-- Google Auth Modal -->
+  <div class="modal" data-auth-modal hidden>
+    <div class="modal-card auth-modal-card" role="dialog" aria-labelledby="auth-title" aria-modal="true">
+      <div style="font-size:3rem;margin-bottom:10px;">🌟</div>
+      <h2 id="auth-title">Sign in to Revia</h2>
+      <p class="lede" style="margin:0 auto 16px;font-size:1rem;">Save your reviewers to the cloud and study seamlessly across all your devices!</p>
+      
+      <div class="google-btn-slot" data-google-btn-slot></div>
+      
+      <p class="meta" data-auth-status-note style="font-size:0.88rem;color:var(--muted);">We only use your Google profile to securely save your study decks.</p>
+      
+      <div class="button-row" style="justify-content:center;margin-top:20px;">
+        <button type="button" class="button button-secondary" data-close-modal>Continue as Guest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Popup -->
+  <div class="toast-popup" data-toast hidden>
+    <span class="toast-icon">📋</span>
+    <span class="toast-message"></span>
+  </div>
+
+  <script type="module" src="/js/app.js?v=23"></script>
 </body>
 </html>

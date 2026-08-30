@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { saveReviewerToDb, getReviewerFromDb } = require("../db");
 
 const GENERIC_ERROR = "Unable to generate reviewer.";
 const MIN_CONTENT_LENGTH = 20;
@@ -274,6 +275,13 @@ async function generateStudyDeck(req, res) {
         const parsed = parseJsonObject(rawText || payload);
         const reviewer = validateAndNormalizeDeck(parsed, title);
 
+        // Persist to PostgreSQL if configured
+        try {
+          await saveReviewerToDb(reviewer, req.userId);
+        } catch (_dbErr) {
+          // Gracefully continue if DB fails
+        }
+
         return res.json({
           success: true,
           reviewer
@@ -298,6 +306,67 @@ async function generateStudyDeck(req, res) {
   }
 }
 
+async function getReviewerById(req, res) {
+  try {
+    const id = asNonEmptyString(req.params && req.params.id);
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "Reviewer ID is required."
+      });
+    }
+
+    const reviewer = await getReviewerFromDb(id);
+    if (!reviewer) {
+      return res.status(404).json({
+        success: false,
+        error: "Reviewer not found."
+      });
+    }
+
+    return res.json({
+      success: true,
+      reviewer
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Failed to retrieve reviewer."
+    });
+  }
+}
+
+async function shareReviewer(req, res) {
+  try {
+    const raw = req.body && req.body.reviewer;
+    if (!raw || !raw.id || !raw.title) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid reviewer data."
+      });
+    }
+
+    // Persist/Sync to PostgreSQL
+    const saved = await saveReviewerToDb(raw, req.userId);
+    const host = req.get("host") || "localhost:3000";
+    const protocol = req.protocol || "http";
+    const shareUrl = `${protocol}://${host}/reviewer?id=${encodeURIComponent(raw.id)}`;
+
+    return res.json({
+      success: true,
+      shareUrl,
+      savedToCloud: Boolean(saved)
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Failed to share reviewer."
+    });
+  }
+}
+
 module.exports = {
-  generateStudyDeck
+  generateStudyDeck,
+  getReviewerById,
+  shareReviewer
 };

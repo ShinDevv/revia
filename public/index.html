@@ -3,52 +3,207 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1d4ed8">
+  <meta name="theme-color" content="#7ed957">
   <meta name="description" content="Generate and study AI-powered reviewers with flashcards and quizzes.">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
-  <title>Revia · AI Study Reviewer</title>
-  <link rel="stylesheet" href="/css/style.css?v=10">
+  <title>Revia · AI Study Buddy & Reviewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css?v=23">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body data-page="dashboard">
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="/">
-        Revia
+        <img class="brand-icon" src="/icons/icon.svg" alt="" aria-hidden="true">
+        <span>Revia</span>
       </a>
+
+      <!-- Gamified Header Pills -->
+      <div class="header-gamify">
+        <div class="stat-pill pill-streak" title="Daily study streak">
+          <span aria-hidden="true">🔥</span>
+          <span data-global-streak>0</span>
+          <span>Streak</span>
+        </div>
+        <div class="stat-pill pill-xp" title="Total Study XP">
+          <span aria-hidden="true">⭐</span>
+          <span data-global-xp>0</span>
+          <span>XP</span>
+        </div>
+      </div>
+
       <nav class="nav" aria-label="Primary">
-        <a href="/" data-nav="dashboard">Dashboard</a>
-        <a href="/create" data-nav="create">Create</a>
-        <a href="/library" data-nav="library">Library</a>
+        <a href="/" data-nav="dashboard">🏠 Dashboard</a>
+        <a href="/create" data-nav="create">✨ Create</a>
+        <a href="/library" data-nav="library">📚 Library</a>
       </nav>
+
+      <!-- Unified Header Kebab Menu -->
+      <details class="header-kebab-menu" data-header-menu>
+        <summary class="header-kebab-btn" aria-label="Account & settings menu">⋮</summary>
+        <div class="header-kebab-dropdown">
+          <div data-menu-auth-section>
+            <!-- Rendered dynamically by app.js -->
+          </div>
+          <div class="menu-divider"></div>
+          <button type="button" class="menu-item" data-menu-theme-toggle>
+            <span data-theme-icon>🌙</span>
+            <span data-theme-label>Dark Mode</span>
+          </button>
+          <div data-menu-install-section></div>
+        </div>
+      </details>
     </div>
   </header>
 
   <main>
     <section class="hero">
-      <p class="eyebrow">Dashboard</p>
-      <h1>Study smarter with AI.</h1>
-      <p class="lede">Paste your notes, generate a structured reviewer, then study with flashcards and quizzes saved on this device.</p>
+      <div class="hero-mascot-row">
+        <div class="mascot-wrap">
+          <svg class="mascot-avatar" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="65" r="42" fill="#7ed957" stroke="#181d14" stroke-width="6"/>
+            <path d="M60 25 C60 10, 78 8, 80 20 C82 32, 63 30, 60 28 Z" fill="#56c927" stroke="#181d14" stroke-width="4"/>
+            <path d="M60 25 C60 12, 44 10, 42 22 C40 34, 57 30, 60 28 Z" fill="#7ed957" stroke="#181d14" stroke-width="4"/>
+            <ellipse cx="46" cy="60" rx="7" ry="10" fill="#181d14"/>
+            <ellipse cx="74" cy="60" rx="7" ry="10" fill="#181d14"/>
+            <circle cx="44" cy="56" r="3" fill="#ffffff"/>
+            <circle cx="48" cy="64" r="1.5" fill="#ffffff"/>
+            <circle cx="72" cy="56" r="3" fill="#ffffff"/>
+            <circle cx="76" cy="64" r="1.5" fill="#ffffff"/>
+            <ellipse cx="36" cy="70" rx="6" ry="4" fill="#ff7556" opacity="0.85"/>
+            <ellipse cx="84" cy="70" rx="6" ry="4" fill="#ff7556" opacity="0.85"/>
+            <path d="M52 68 Q60 78 68 68" stroke="#181d14" stroke-width="5" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span class="mascot-nameplate">Revy</span>
+        </div>
+
+        <div class="speech-bubble">
+          <p data-mascot-greeting>Hey super learner! Ready for a fun study adventure today? Let's turn your notes into magic! 🚀✨</p>
+        </div>
+      </div>
+
       <div class="button-row">
-        <a class="button button-primary" href="/create">Create Reviewer</a>
-        <a class="button button-secondary" href="/library">Open Library</a>
+        <a class="button button-primary" href="/create">✨ Create Reviewer</a>
+        <a class="button button-secondary" href="/library">📚 Open Library</a>
       </div>
     </section>
 
-    <section class="page">
+    <!-- Gamified Learning Journey Pathway -->
+    <section class="page" style="padding-top:0;">
+      <div class="game-pathway">
+        <div class="pathway-header">
+          <div>
+            <span class="eyebrow">🏆 Study Adventure Map</span>
+            <h2>Your Learning Journey</h2>
+          </div>
+          <span class="badge-tag">Level <strong data-journey-level>1</strong> Learner</span>
+        </div>
+
+        <div class="pathway-track">
+          <div class="pathway-line"></div>
+          <div class="pathway-fill" data-journey-fill style="width: 25%;"></div>
+          
+          <div class="pathway-node is-complete" title="Getting Started">🌱</div>
+          <div class="pathway-node is-active" title="Card Explorer">⭐</div>
+          <div class="pathway-node" title="Quiz Champion">🎯</div>
+          <div class="pathway-node" title="Master Scholar">🏆</div>
+        </div>
+      </div>
+
+      <!-- Sticker Stats Grid -->
       <div class="stats-grid">
         <article class="stat-card">
-          <p class="eyebrow">Saved Reviewers</p>
-          <p class="stat-value" data-reviewer-count>0</p>
+          <div class="stat-badge bg-lime">📚</div>
+          <div>
+            <p class="eyebrow">Saved Decks</p>
+            <p class="stat-value" data-reviewer-count>0</p>
+          </div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-badge bg-yellow">⭐</div>
+          <div>
+            <p class="eyebrow">Cards Mastered</p>
+            <p class="stat-value" data-mastered-count>0</p>
+          </div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-badge bg-blue">🔥</div>
+          <div>
+            <p class="eyebrow">Best Streak</p>
+            <p class="stat-value" data-best-streak-count>0</p>
+          </div>
         </article>
       </div>
 
-      <h2>Recent Reviewers</h2>
-      <p class="empty-copy" data-dashboard-empty hidden>No reviewers yet. Create one from your notes to get started.</p>
-      <div class="card-grid" data-recent-list></div>
+      <!-- Recent Reviewers Grid -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:36px;margin-bottom:16px;">
+        <h2>Recent Reviewers 🌟</h2>
+        <a class="button button-secondary" style="min-height:38px;padding:6px 14px;font-size:0.95rem;" href="/library">View All</a>
+      </div>
+
+      <p class="empty-copy" data-dashboard-empty hidden>
+        🎈 No reviewers yet! Click <strong>Create Reviewer</strong> to turn your study notes into flashcards & quizzes.
+      </p>
+      <div class="card-grid" data-recent-list>
+        <!-- Skeleton cards render immediately while loading -->
+        <div class="skeleton-card">
+          <div class="card-top">
+            <div class="skeleton-box skeleton-shimmer"></div>
+            <div class="skeleton-badge skeleton-shimmer"></div>
+          </div>
+          <div class="skeleton-line skeleton-shimmer"></div>
+          <div class="skeleton-line short skeleton-shimmer"></div>
+          <div class="skeleton-line skeleton-shimmer" style="height:14px;border-radius:999px;margin-top:18px;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="card-top">
+            <div class="skeleton-box skeleton-shimmer"></div>
+            <div class="skeleton-badge skeleton-shimmer"></div>
+          </div>
+          <div class="skeleton-line skeleton-shimmer"></div>
+          <div class="skeleton-line short skeleton-shimmer"></div>
+          <div class="skeleton-line skeleton-shimmer" style="height:14px;border-radius:999px;margin-top:18px;"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="card-top">
+            <div class="skeleton-box skeleton-shimmer"></div>
+            <div class="skeleton-badge skeleton-shimmer"></div>
+          </div>
+          <div class="skeleton-line skeleton-shimmer"></div>
+          <div class="skeleton-line short skeleton-shimmer"></div>
+          <div class="skeleton-line skeleton-shimmer" style="height:14px;border-radius:999px;margin-top:18px;"></div>
+        </div>
+      </div>
     </section>
   </main>
 
-  <script type="module" src="/js/app.js?v=16"></script>
+  <!-- Google Auth Modal -->
+  <div class="modal" data-auth-modal hidden>
+    <div class="modal-card auth-modal-card" role="dialog" aria-labelledby="auth-title" aria-modal="true">
+      <div style="font-size:3rem;margin-bottom:10px;">🌟</div>
+      <h2 id="auth-title">Sign in to Revia</h2>
+      <p class="lede" style="margin:0 auto 16px;font-size:1rem;">Save your reviewers to the cloud and study seamlessly across all your devices!</p>
+      
+      <div class="google-btn-slot" data-google-btn-slot></div>
+      
+      <p class="meta" data-auth-status-note style="font-size:0.88rem;color:var(--muted);">We only use your Google profile to securely save your study decks.</p>
+      
+      <div class="button-row" style="justify-content:center;margin-top:20px;">
+        <button type="button" class="button button-secondary" data-close-modal>Continue as Guest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Popup -->
+  <div class="toast-popup" data-toast hidden>
+    <span class="toast-icon">📋</span>
+    <span class="toast-message"></span>
+  </div>
+
+  <script type="module" src="/js/app.js?v=23"></script>
 </body>
 </html>

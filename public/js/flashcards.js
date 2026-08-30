@@ -76,6 +76,13 @@ export function createFlashcardSession(root, cards, options = {}) {
     const card = currentCard();
     if (!card || !flipped) return;
     options.onAnswer?.(card, correct);
+
+    // If there is a next card, move to next card smoothly after short delay
+    if (index < deck.length - 1) {
+      setTimeout(() => {
+        next();
+      }, 250);
+    }
   }
 
   function onKeyDown(event) {
