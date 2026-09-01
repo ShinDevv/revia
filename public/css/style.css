@@ -287,12 +287,77 @@ h3 {
   flex-wrap: wrap;
 }
 
-/* Groups pills, nav + kebab inside the header (desktop) */
-.bottom-bar {
+/* Bottom Tab Navigation (fixed to bottom of viewport) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
+  align-items: stretch;
+  justify-content: space-evenly;
+  gap: 0;
+  flex-wrap: nowrap;
+  background: var(--bg);
+  border-top: var(--border-w) solid var(--line);
+  box-shadow: 0 -4px 0 rgba(0, 0, 0, 0.06);
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: 100vw;
+}
+
+.bottom-nav a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  min-height: 50px;
+  padding: 4px 6px;
+  font-family: "Fredoka", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  border-radius: 12px;
+  border: 2px solid transparent;
+  text-align: center;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.bottom-nav a span {
+  display: block;
+}
+
+.bottom-nav a > span:first-child {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.bottom-nav a:hover {
+  transform: none;
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.bottom-nav a.is-active {
+  color: var(--ink);
+  background: var(--accent);
+  border-color: var(--ink);
+  box-shadow: var(--shadow-pill);
+  font-weight: 700;
+  transform: none;
+}
+
+/* Give scrollable content room so the last card/button isn't hidden behind the nav */
+body {
+  padding-bottom: 120px;
+}
+
+main {
+  padding-bottom: 8px;
 }
 
 .brand {
@@ -1720,54 +1785,36 @@ textarea {
 /* ===================== MOBILE RESPONSIVE ===================== */
 
 @media (max-width: 768px) {
-  /* ── Header: only the brand stays on top; controls move to bottom bar ── */
+  .site-header {
+    position: static;
+    border-bottom: none;
+  }
+
+  /* ── Slim top header: brand + streak/XP pills + kebab menu only ── */
   .header-inner {
-    min-height: 64px;
+    min-height: 60px;
     flex-wrap: nowrap;
     gap: 8px;
+    padding: 8px 0;
+  }
+
+  .brand {
+    font-size: 1.35rem;
   }
 
   .brand span {
     display: none;
   }
 
-  /* The whole bottom-bar (streak, XP, nav + kebab) becomes a fixed bottom tab bar */
-  .bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: nowrap;
-    background: var(--bg);
-    border-top: var(--border-w) solid var(--line);
-    padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
-    box-shadow: 0 -6px 0 rgba(0, 0, 0, 0.05);
-  }
-
-  /* Streak / XP pills (compact, kept visible inside the bottom bar) */
-  .header-gamify {
-    order: 2;
-    flex-shrink: 0;
-  }
-
+  /* Streak / XP pills (compact for the slim header) */
   .stat-pill {
     padding: 5px 9px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     gap: 4px;
   }
 
   .stat-pill span:last-child {
-    font-size: 0.7rem;
-  }
-
-  /* Kebab button at the end of the bottom bar */
-  .header-kebab-menu {
-    order: 3;
-    flex-shrink: 0;
+    font-size: 0.68rem;
   }
 
   .header-kebab-btn {
@@ -1776,61 +1823,9 @@ textarea {
     font-size: 1.2rem;
   }
 
-  /* Kebab dropdown opens upward on mobile (button sits near screen bottom) */
-  .header-kebab-dropdown {
-    top: auto;
-    bottom: calc(100% + 10px);
-    right: 0;
-    left: auto;
-    min-width: 200px;
-    max-width: 80vw;
-  }
-
-  /* Nav links fill the middle of the bottom bar */
-  .nav {
-    order: 1;
-    flex: 1;
-    display: flex;
-    align-items: stretch;
-    gap: 4px;
-    flex-wrap: nowrap;
-    min-width: 0;
-  }
-
-  .nav a {
-    flex: 1;
-    flex-direction: column;
-    justify-content: center;
-    gap: 3px;
-    min-height: 48px;
-    padding: 4px 4px;
-    font-size: 0.68rem;
-    border-radius: 12px;
-    border: 2px solid transparent;
-    text-align: center;
-    line-height: 1.1;
-    white-space: nowrap;
-  }
-
-  .nav a:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
-  .nav a.is-active {
-    background: var(--accent);
-    border-color: var(--ink);
-    box-shadow: var(--shadow-pill);
-    transform: none;
-  }
-
-  body {
-    padding-bottom: 96px;
-  }
-
-  /* Toast sits just above the bottom bar on mobile */
+  /* Toast sits just above the bottom nav on mobile */
   .toast-popup {
-    bottom: 118px;
+    bottom: 124px;
   }
 
   /* ── Hero ── */

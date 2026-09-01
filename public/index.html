@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css?v=27">
+  <link rel="stylesheet" href="/css/style.css?v=28">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body data-page="dashboard">
@@ -22,45 +22,44 @@
         <span>Revia</span>
       </a>
 
-      <div class="bottom-bar">
-        <!-- Gamified Header Pills -->
-        <div class="header-gamify">
-          <div class="stat-pill pill-streak" title="Daily study streak">
-            <span aria-hidden="true">🔥</span>
-            <span data-global-streak>0</span>
-            <span>Streak</span>
-          </div>
-          <div class="stat-pill pill-xp" title="Total Study XP">
-            <span aria-hidden="true">⭐</span>
-            <span data-global-xp>0</span>
-            <span>XP</span>
-          </div>
+      <!-- Gamified Header Pills -->
+      <div class="header-gamify">
+        <div class="stat-pill pill-streak" title="Daily study streak">
+          <span aria-hidden="true">🔥</span>
+          <span data-global-streak>0</span>
+          <span>Streak</span>
         </div>
-
-        <nav class="nav" aria-label="Primary">
-          <a href="/" data-nav="dashboard">🏠 Dashboard</a>
-          <a href="/create" data-nav="create">✨ Create</a>
-          <a href="/library" data-nav="library">📚 Library</a>
-        </nav>
-
-        <!-- Unified Header Kebab Menu -->
-        <details class="header-kebab-menu" data-header-menu>
-          <summary class="header-kebab-btn" aria-label="Account & settings menu">⋮</summary>
-          <div class="header-kebab-dropdown">
-            <div data-menu-auth-section>
-              <!-- Rendered dynamically by app.js -->
-            </div>
-            <div class="menu-divider"></div>
-            <button type="button" class="menu-item" data-menu-theme-toggle>
-              <span data-theme-icon>🌙</span>
-              <span data-theme-label>Dark Mode</span>
-            </button>
-            <div data-menu-install-section></div>
-          </div>
-        </details>
+        <div class="stat-pill pill-xp" title="Total Study XP">
+          <span aria-hidden="true">⭐</span>
+          <span data-global-xp>0</span>
+          <span>XP</span>
+        </div>
       </div>
+
+      <!-- Unified Header Kebab Menu -->
+      <details class="header-kebab-menu" data-header-menu>
+        <summary class="header-kebab-btn" aria-label="Account & settings menu">⋮</summary>
+        <div class="header-kebab-dropdown">
+          <div data-menu-auth-section>
+            <!-- Rendered dynamically by app.js -->
+          </div>
+          <div class="menu-divider"></div>
+          <button type="button" class="menu-item" data-menu-theme-toggle>
+            <span data-theme-icon>🌙</span>
+            <span data-theme-label>Dark Mode</span>
+          </button>
+          <div data-menu-install-section></div>
+        </div>
+      </details>
     </div>
   </header>
+
+  <!-- Bottom Tab Navigation -->
+  <nav class="bottom-nav" aria-label="Primary">
+    <a href="/" data-nav="dashboard"><span>🏠</span><span>Dashboard</span></a>
+    <a href="/create" data-nav="create"><span>✨</span><span>Create</span></a>
+    <a href="/library" data-nav="library"><span>📚</span><span>Library</span></a>
+  </nav>
 
   <main>
     <section class="hero">
