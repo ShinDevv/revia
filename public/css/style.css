@@ -1712,11 +1712,7 @@ textarea {
 /* ===================== MOBILE RESPONSIVE ===================== */
 
 @media (max-width: 768px) {
-  /* ── Header ── */
-  .header-gamify {
-    display: none;
-  }
-
+  /* ── Header (keeps brand, streak/XP pills and kebab menu) ── */
   .header-kebab-menu {
     display: block;
   }
@@ -1724,10 +1720,17 @@ textarea {
   .header-inner {
     min-height: 60px;
     flex-wrap: nowrap;
+    gap: 8px;
   }
 
-  .brand span {
-    display: none;
+  .stat-pill {
+    padding: 5px 9px;
+    font-size: 0.82rem;
+    gap: 4px;
+  }
+
+  .stat-pill span:last-child {
+    font-size: 0.72rem;
   }
 
   /* Navigation becomes a fixed bottom tab bar (mobile only) */
