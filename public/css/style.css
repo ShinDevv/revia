@@ -261,6 +261,7 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 50;
+  isolation: isolate;
   background: rgba(253, 251, 247, 0.95);
   backdrop-filter: blur(12px);
   border-bottom: var(--border-w) solid var(--line);
@@ -493,12 +494,13 @@ main {
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
-  z-index: 60;
+  z-index: 1000;
   min-width: 220px;
   background: var(--card);
+  background-clip: padding-box;
   border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 10px 0 var(--ink), 0 18px 40px rgba(0, 0, 0, 0.22);
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -1786,7 +1788,8 @@ textarea {
 
 @media (max-width: 768px) {
   .site-header {
-    position: static;
+    position: relative;
+    z-index: 50;
     border-bottom: none;
   }
 
