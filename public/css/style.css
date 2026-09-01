@@ -287,6 +287,14 @@ h3 {
   flex-wrap: wrap;
 }
 
+/* Groups pills, nav + kebab inside the header (desktop) */
+.bottom-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -1712,15 +1720,38 @@ textarea {
 /* ===================== MOBILE RESPONSIVE ===================== */
 
 @media (max-width: 768px) {
-  /* ── Header (keeps brand, streak/XP pills and kebab menu) ── */
-  .header-kebab-menu {
-    display: block;
-  }
-
+  /* ── Header: only the brand stays on top; controls move to bottom bar ── */
   .header-inner {
-    min-height: 60px;
+    min-height: 64px;
     flex-wrap: nowrap;
     gap: 8px;
+  }
+
+  .brand span {
+    display: none;
+  }
+
+  /* The whole bottom-bar (streak, XP, nav + kebab) becomes a fixed bottom tab bar */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    background: var(--bg);
+    border-top: var(--border-w) solid var(--line);
+    padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
+    box-shadow: 0 -6px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  /* Streak / XP pills (compact, kept visible inside the bottom bar) */
+  .header-gamify {
+    order: 2;
+    flex-shrink: 0;
   }
 
   .stat-pill {
@@ -1730,24 +1761,40 @@ textarea {
   }
 
   .stat-pill span:last-child {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
   }
 
-  /* Navigation becomes a fixed bottom tab bar (mobile only) */
-  .nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
+  /* Kebab button at the end of the bottom bar */
+  .header-kebab-menu {
+    order: 3;
+    flex-shrink: 0;
+  }
+
+  .header-kebab-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  /* Kebab dropdown opens upward on mobile (button sits near screen bottom) */
+  .header-kebab-dropdown {
+    top: auto;
+    bottom: calc(100% + 10px);
     right: 0;
-    z-index: 100;
+    left: auto;
+    min-width: 200px;
+    max-width: 80vw;
+  }
+
+  /* Nav links fill the middle of the bottom bar */
+  .nav {
+    order: 1;
+    flex: 1;
     display: flex;
     align-items: stretch;
-    gap: 0;
+    gap: 4px;
     flex-wrap: nowrap;
-    background: var(--bg);
-    border-top: var(--border-w) solid var(--line);
-    padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
-    box-shadow: 0 -6px 0 rgba(0, 0, 0, 0.05);
+    min-width: 0;
   }
 
   .nav a {
@@ -1755,13 +1802,14 @@ textarea {
     flex-direction: column;
     justify-content: center;
     gap: 3px;
-    min-height: 52px;
-    padding: 4px 6px;
-    font-size: 0.72rem;
-    border-radius: 14px;
+    min-height: 48px;
+    padding: 4px 4px;
+    font-size: 0.68rem;
+    border-radius: 12px;
     border: 2px solid transparent;
     text-align: center;
     line-height: 1.1;
+    white-space: nowrap;
   }
 
   .nav a:hover {
@@ -1777,12 +1825,12 @@ textarea {
   }
 
   body {
-    padding-bottom: 90px;
+    padding-bottom: 96px;
   }
 
-  /* Toast sits just above the bottom tab bar on mobile */
+  /* Toast sits just above the bottom bar on mobile */
   .toast-popup {
-    bottom: 110px;
+    bottom: 118px;
   }
 
   /* ── Hero ── */
