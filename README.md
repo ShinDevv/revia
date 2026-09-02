@@ -51,7 +51,7 @@ Revia turns study notes into an AI-powered study reviewer with flashcards, multi
 
     # Optional: one key also works, and the model can be changed without code edits
     # GEMINI_API_KEY=your-gemini-key
-    # GEMINI_MODEL=gemini-2.5-flash-lite
+    # GEMINI_MODEL=gemini-3.6-flash
 
    # Port
    PORT=3000

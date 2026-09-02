@@ -236,7 +236,7 @@ function getGeminiApiKeys() {
 }
 
 function getGeminiModel() {
-  return process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+  return process.env.GEMINI_MODEL || "gemini-3.6-flash";
 }
 
 async function requestFromGemini(apiKey, prompt, timeoutMs) {
@@ -263,7 +263,14 @@ async function requestFromGemini(apiKey, prompt, timeoutMs) {
     });
 
     if (!response.ok) {
-      throw new Error(`upstream-${response.status}`);
+      const errorBody = await response.text();
+      let errorMessage = errorBody;
+      try {
+        errorMessage = JSON.parse(errorBody)?.error?.message || errorBody;
+      } catch (_error) {
+        // Keep the plain-text upstream response when it is not JSON.
+      }
+      throw new Error(`upstream-${response.status}: ${String(errorMessage).slice(0, 240)}`);
     }
 
     const contentType = response.headers.get("content-type") || "";
