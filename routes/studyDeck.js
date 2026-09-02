@@ -24,16 +24,21 @@ function asNonEmptyString(value) {
 
 function extractTextFromGemini(payload) {
   if (payload == null) {
+    console.log("[StudyDeck] extractTextFromGemini: payload is null");
     return "";
   }
 
   if (typeof payload === "string") {
+    console.log("[StudyDeck] extractTextFromGemini: payload is already a string");
     return payload;
   }
 
   if (typeof payload !== "object") {
+    console.log("[StudyDeck] extractTextFromGemini: payload is not an object");
     return "";
   }
+
+  console.log("[StudyDeck] extractTextFromGemini: payload keys:", Object.keys(payload));
 
   const nestedKeys = [
     "response",
@@ -51,6 +56,7 @@ function extractTextFromGemini(payload) {
   for (const key of nestedKeys) {
     const value = payload[key];
     if (typeof value === "string" && value.trim()) {
+      console.log("[StudyDeck] extractTextFromGemini: found string at key:", key);
       return value;
     }
     if (value && typeof value === "object") {
@@ -64,14 +70,17 @@ function extractTextFromGemini(payload) {
   if (Array.isArray(payload.candidates) && payload.candidates[0]) {
     const parts = payload.candidates[0].content && payload.candidates[0].content.parts;
     if (Array.isArray(parts)) {
+      console.log("[StudyDeck] extractTextFromGemini: found Gemini candidates format");
       return parts.map((part) => (part && part.text) || "").join("\n");
     }
   }
 
   if (payload.title && payload.flashcards && payload.multipleChoice) {
+    console.log("[StudyDeck] extractTextFromGemini: payload looks like valid deck structure, converting to JSON");
     return JSON.stringify(payload);
   }
 
+  console.log("[StudyDeck] extractTextFromGemini: could not extract text from payload");
   return "";
 }
 
@@ -93,19 +102,26 @@ function parseJsonObject(rawText) {
     }
   } catch (_error) {
     // Fall through to brace extraction.
+    console.error("[StudyDeck] Initial JSON parse failed, attempting brace extraction:", _error?.message);
   }
 
   const start = unfenced.indexOf("{");
   const end = unfenced.lastIndexOf("}");
   if (start === -1 || end <= start) {
+    console.error("[StudyDeck] No valid JSON braces found in response");
     throw new Error("invalid-json");
   }
 
-  const parsed = JSON.parse(unfenced.slice(start, end + 1));
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("invalid-json");
+  try {
+    const parsed = JSON.parse(unfenced.slice(start, end + 1));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("invalid-json");
+    }
+    return parsed;
+  } catch (err) {
+    console.error("[StudyDeck] JSON parse from extracted braces failed:", err?.message);
+    throw err;
   }
-  return parsed;
 }
 
 function validateAndNormalizeDeck(raw, requestedTitle) {
@@ -113,17 +129,22 @@ function validateAndNormalizeDeck(raw, requestedTitle) {
   const summary = asNonEmptyString(raw.summary);
 
   if (!title || !summary) {
+    console.error("[StudyDeck] Missing title or summary. Title:", !!title, "Summary:", !!summary);
     throw new Error("invalid-shape");
   }
 
   if (!Array.isArray(raw.flashcards) || !Array.isArray(raw.multipleChoice)) {
+    console.error("[StudyDeck] Invalid arrays. Flashcards is array:", Array.isArray(raw.flashcards), "MCQ is array:", Array.isArray(raw.multipleChoice));
     throw new Error("invalid-shape");
   }
+
+  console.log(`[StudyDeck] Processing ${raw.flashcards.length} flashcards and ${raw.multipleChoice.length} MCQ items`);
 
   const usedIds = new Set();
 
   const flashcards = raw.flashcards.map((card, index) => {
     if (!card || typeof card !== "object") {
+      console.error(`[StudyDeck] Invalid flashcard at index ${index}:`, card);
       throw new Error("invalid-flashcard");
     }
 
@@ -132,6 +153,7 @@ function validateAndNormalizeDeck(raw, requestedTitle) {
     let id = asNonEmptyString(card.id) || `fc-${String(index + 1).padStart(3, "0")}`;
 
     if (!front || !back) {
+      console.error(`[StudyDeck] Flashcard ${index} missing front or back. Front:`, !!front, "Back:", !!back);
       throw new Error("invalid-flashcard");
     }
 
@@ -145,6 +167,7 @@ function validateAndNormalizeDeck(raw, requestedTitle) {
 
   const multipleChoice = raw.multipleChoice.map((item, index) => {
     if (!item || typeof item !== "object") {
+      console.error(`[StudyDeck] Invalid MCQ at index ${index}:`, item);
       throw new Error("invalid-mcq");
     }
 
@@ -157,11 +180,12 @@ function validateAndNormalizeDeck(raw, requestedTitle) {
     let id = asNonEmptyString(item.id) || `mcq-${String(index + 1).padStart(3, "0")}`;
 
     if (!question || !explanation || options.length !== 4) {
+      console.error(`[StudyDeck] MCQ ${index} invalid. Question:`, !!question, "Explanation:", !!explanation, "Options count:", options.length);
       throw new Error("invalid-mcq");
     }
 
     if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) {
-      throw new Error("invalid-mcq");
+      console.error(`[StudyDeck] MCQ ${index} has invalid answerIndex:`, answerIndex);
     }
 
     if (usedIds.has(id)) {
@@ -204,17 +228,22 @@ function sendFailure(_req, res) {
   });
 }
 
-function getApiEndpoints() {
-  const configured = process.env.AI_API_URLS || process.env.GEMINI_API_URL;
-  return (configured || "https://smfahim.xyz/ai/gemini/v3")
+function getGeminiApiKeys() {
+  return (process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || "")
     .split(",")
-    .map((url) => url.trim())
+    .map((key) => key.trim())
     .filter(Boolean);
 }
 
-async function requestFromEndpoint(endpoint, prompt, timeoutMs) {
+function getGeminiModel() {
+  return process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+}
+
+async function requestFromGemini(apiKey, prompt, timeoutMs) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const model = encodeURIComponent(getGeminiModel());
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   try {
     const response = await fetch(endpoint, {
@@ -223,7 +252,13 @@ async function requestFromEndpoint(endpoint, prompt, timeoutMs) {
         Accept: "application/json, text/plain",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.2
+        }
+      }),
       signal: controller.signal
     });
 
@@ -261,19 +296,38 @@ async function generateStudyDeck(req, res) {
     try {
       systemPrompt = loadSystemPrompt();
     } catch (_error) {
+      console.error("[StudyDeck] Failed to load system prompt:", _error?.message || _error);
       return sendFailure(req, res);
     }
 
     const timeoutMs = Number(process.env.GEMINI_TIMEOUT_MS) || 90000;
     const fullPrompt = buildPrompt(systemPrompt, title, content);
     let timedOut = false;
+    const apiKeys = getGeminiApiKeys();
+    if (!apiKeys.length) {
+      console.error("[StudyDeck] No Gemini API keys configured");
+      return res.status(503).json({
+        success: false,
+        error: "AI generation is not configured. Add a Gemini API key to the server environment."
+      });
+    }
 
-    for (const endpoint of getApiEndpoints()) {
+    console.log(`[StudyDeck] Attempting generation with ${apiKeys.length} Gemini API key(s) using ${getGeminiModel()}`);
+
+    for (let index = 0; index < apiKeys.length; index += 1) {
       try {
-        const payload = await requestFromEndpoint(endpoint, fullPrompt, timeoutMs);
+        console.log(`[StudyDeck] Calling Gemini key ${index + 1}/${apiKeys.length}`);
+        const payload = await requestFromGemini(apiKeys[index], fullPrompt, timeoutMs);
+        console.log(`[StudyDeck] Received payload:`, JSON.stringify(payload).substring(0, 200));
+        
         const rawText = extractTextFromGemini(payload);
+        console.log(`[StudyDeck] Extracted text:`, rawText?.substring(0, 200) || "(empty)");
+        
         const parsed = parseJsonObject(rawText || payload);
+        console.log(`[StudyDeck] Parsed JSON successfully`);
+        
         const reviewer = validateAndNormalizeDeck(parsed, title);
+        console.log(`[StudyDeck] Validated deck successfully`);
 
         // Persist to PostgreSQL if configured
         try {
@@ -287,8 +341,12 @@ async function generateStudyDeck(req, res) {
           reviewer
         });
       } catch (error) {
+        const errorMsg = error?.message || String(error);
+        console.error(`[StudyDeck] Error with Gemini key ${index + 1}:`, errorMsg);
+        
         if (error && error.name === "AbortError") {
           timedOut = true;
+          console.warn(`[StudyDeck] Request timed out for Gemini key ${index + 1}`);
         }
       }
     }
@@ -300,8 +358,10 @@ async function generateStudyDeck(req, res) {
       });
     }
 
+    console.error("[StudyDeck] All Gemini API keys failed to generate reviewer");
     return sendFailure(req, res);
   } catch (_error) {
+    console.error("[StudyDeck] Unexpected error in generateStudyDeck:", _error?.message || _error);
     return sendFailure(req, res);
   }
 }

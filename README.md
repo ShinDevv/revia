@@ -23,7 +23,7 @@ Revia turns study notes into an AI-powered study reviewer with flashcards, multi
 - Node.js 18 or newer
 - (Optional) A [Neon.tech](https://neon.tech) PostgreSQL connection string
 - (Optional) [Google Cloud Console](https://console.cloud.google.com/) OAuth Client ID for Google Login
-- An AI endpoint that accepts standard prompt requests
+- A Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
 
 ---
 
@@ -46,12 +46,18 @@ Revia turns study notes into an AI-powered study reviewer with flashcards, multi
    GOOGLE_CLIENT_SECRET=your-client-secret
    SESSION_SECRET=revia-super-secret-toy-key-2026
 
-   # AI Endpoints (comma-separated for failover)
-   AI_API_URLS=https://ceddsrestapi.vercel.app/ai/chatgpt
+    # Gemini API keys (comma-separated; tried in order when a key fails)
+    GEMINI_API_KEYS=your-first-key,your-second-key
+
+    # Optional: one key also works, and the model can be changed without code edits
+    # GEMINI_API_KEY=your-gemini-key
+    # GEMINI_MODEL=gemini-2.5-flash-lite
 
    # Port
    PORT=3000
    ```
+
+    Keep the keys server-side in `.env`; never put them in the `public` folder or browser code.
 
    > **Note:** If `DATABASE_URL` or `GOOGLE_CLIENT_ID` are omitted, Revia gracefully runs in local-first guest mode using browser `localStorage`.
 
